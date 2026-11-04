@@ -17,7 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun EsqueceuSenhaScreen(onBackClick: () -> Unit) {
+fun EsqueceuSenhaScreen(
+    onBackClick: () -> Unit,
+    onContinueClick: () -> Unit // Parâmetro adicionado para avançar a tela
+) {
     var email by remember { mutableStateOf("") }
 
     Box(
@@ -84,7 +87,7 @@ fun EsqueceuSenhaScreen(onBackClick: () -> Unit) {
 
             // Botão Continue
             Button(
-                onClick = { /* Ação de continuar/enviar email */ },
+                onClick = { onContinueClick() }, // Aciona a transição para a próxima tela
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
