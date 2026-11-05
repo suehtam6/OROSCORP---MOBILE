@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.oroscorp_adm.screens.EsqueceuSenhaScreen
 import com.example.oroscorp_adm.screens.HomeScreen
+import com.example.oroscorp_adm.screens.FuncionariosScreen
 import com.example.oroscorp_adm.screens.RedefinirSenhaCodigo
 import com.example.oroscorp_adm.screens.TrocarSenhaScreen
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
@@ -31,7 +32,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
 
         setContent {
@@ -49,41 +49,25 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-
-    // Controla qual tela está sendo exibida
     var telaAtual by remember { mutableStateOf("login") }
 
     when (telaAtual) {
 
-        // TELA DE LOGIN
         "login" -> {
             LoginScreen(
-                onEntrarClick = {
-                    telaAtual = "home"
-                },
-                onEsqueceuSenhaClick = {
-                    telaAtual = "esqueceu"
-                }
+                onEntrarClick = { telaAtual = "home" },
+                onEsqueceuSenhaClick = { telaAtual = "esqueceu" }
             )
         }
 
-        // TELA HOME / DASHBOARD
         "home" -> {
             HomeScreen(
-                onDashboardClick = {
-                    telaAtual = "home"
-                },
-                onSetoresClick = {
-                    // Adicionar navegação para Setores
-                },
-                onCamerasClick = {
-                    // Adicionar navegação para Câmeras
-                },
-                onOcorrenciasClick = {
-                    // Adicionar navegação para Ocorrências
-                },
+                onDashboardClick = { telaAtual = "home" },
+                onSetoresClick = {},
+                onCamerasClick = {},
+                onOcorrenciasClick = {},
                 onFuncionariosClick = {
-                    // Adicionar navegação para Funcionários
+                    telaAtual = "funcionarios"
                 },
                 onSairClick = {
                     telaAtual = "login"
@@ -91,39 +75,32 @@ fun AppNavigation() {
             )
         }
 
-        // ESQUECEU A SENHA
+        "funcionarios" -> {
+            FuncionariosScreen(
+                onBackClick = {
+                    telaAtual = "home"
+                }
+            )
+        }
+
         "esqueceu" -> {
             EsqueceuSenhaScreen(
-                onBackClick = {
-                    telaAtual = "login"
-                },
-                onContinueClick = {
-                    telaAtual = "codigo"
-                }
+                onBackClick = { telaAtual = "login" },
+                onContinueClick = { telaAtual = "codigo" }
             )
         }
 
-        // CÓDIGO DE RECUPERAÇÃO
         "codigo" -> {
             RedefinirSenhaCodigo(
-                onBackClick = {
-                    telaAtual = "esqueceu"
-                },
-                onContinueClick = {
-                    telaAtual = "trocar"
-                }
+                onBackClick = { telaAtual = "esqueceu" },
+                onContinueClick = { telaAtual = "trocar" }
             )
         }
 
-        // TROCAR SENHA
         "trocar" -> {
             TrocarSenhaScreen(
-                onBackClick = {
-                    telaAtual = "codigo"
-                },
-                onRedefinirClick = {
-                    telaAtual = "login"
-                }
+                onBackClick = { telaAtual = "codigo" },
+                onRedefinirClick = { telaAtual = "login" }
             )
         }
     }
@@ -134,15 +111,10 @@ fun LoginScreen(
     onEntrarClick: () -> Unit,
     onEsqueceuSenhaClick: () -> Unit
 ) {
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-
-        // IMAGEM DE FUNDO
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.fundo),
             contentDescription = "Fundo",
@@ -150,7 +122,6 @@ fun LoginScreen(
             contentScale = ContentScale.Crop
         )
 
-        // CONTEÚDO DA TELA
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -158,10 +129,8 @@ fun LoginScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.height(40.dp))
 
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // LOGO OROSCORP
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo Oroscorp",
@@ -171,9 +140,8 @@ fun LoginScreen(
                 contentScale = ContentScale.Fit
             )
 
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(Modifier.height(80.dp))
 
-            // TÍTULO
             Text(
                 text = "ENTRE NA SUA CONTA",
                 color = Color.White,
@@ -181,15 +149,12 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // CAMPO DE E-MAIL
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = {
-                    Text("E-mail", color = Color.Gray)
-                },
+                placeholder = { Text("E-mail", color = Color.Gray) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,15 +170,12 @@ fun LoginScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // CAMPO DE SENHA
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = {
-                    Text("SENHA", color = Color.Gray)
-                },
+                placeholder = { Text("SENHA", color = Color.Gray) },
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier
@@ -230,27 +192,23 @@ fun LoginScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // ESQUECEU SUA SENHA
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterStart
             ) {
-                TextButton(
-                    onClick = onEsqueceuSenhaClick
-                ) {
+                TextButton(onClick = onEsqueceuSenhaClick) {
                     Text(
-                        text = "Esqueceu sua senha?",
+                        "Esqueceu sua senha?",
                         color = Color.White,
                         fontSize = 12.sp
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // BOTÃO ENTRAR
             Button(
                 onClick = onEntrarClick,
                 modifier = Modifier
@@ -262,14 +220,12 @@ fun LoginScreen(
                 )
             ) {
                 Text(
-                    text = "ENTRAR",
+                    "ENTRAR",
                     color = Color(0xFFFF7200),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
