@@ -108,7 +108,7 @@ fun FuncionariosScreen(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                text = "Cadastro de colaboradores, conformidade de EPI e histórico de ocorrências.",
+                text = "Lista de funcionários, conformidade de EPI e histórico de ocorrências.",
                 color = Color(0xFFE1C5B5),
                 fontSize = 15.sp,
                 lineHeight = 23.sp,
