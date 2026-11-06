@@ -1,6 +1,4 @@
 package com.example.oroscorp_adm.view.screens
-
-import androidx.annotation.ColorRes
 import com.example.oroscorp_adm.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
