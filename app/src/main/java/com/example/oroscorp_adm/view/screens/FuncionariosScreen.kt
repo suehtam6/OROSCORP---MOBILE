@@ -17,14 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-
-data class Funcionario(
-    val nome: String,
-    val cargo: String,
-    val iniciais: String,
-    val cor: Color
-)
+import com.example.oroscorp_adm.model.Funcionario
 
 @Composable
 fun FuncionariosScreen(
