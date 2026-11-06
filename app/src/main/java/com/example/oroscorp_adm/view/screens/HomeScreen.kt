@@ -1,6 +1,6 @@
+package com.example.oroscorp_adm.view.screens
 
-package com.example.oroscorp_adm.screens
-
+import androidx.annotation.ColorRes
 import com.example.oroscorp_adm.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -11,22 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
-
-private val Laranja = Color(0xFFFF8A1E)
-private val Salmao = Color(0xFFFFB681)
-private val Fundo = Color(0xFF353535)
-private val Cartao = Color(0xFF1E2020)
-private val TextoClaro = Color(0xFFE6D0C2)
 
 @Composable
 fun HomeScreen(
@@ -43,7 +35,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Fundo)
+            .background(colorResource(R.color.Fundo))
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
@@ -78,11 +70,11 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .size(52.dp)
-                        .border(2.dp, Laranja, CircleShape)
+                        .border(2.dp, colorResource(R.color.Laranja), CircleShape)
                         .clickable { menuAberto = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("☰", color = Laranja, fontSize = 28.sp)
+                    Text("☰", color = colorResource(R.color.Laranja), fontSize = 28.sp)
                 }
 
                 Spacer(Modifier.height(22.dp))
@@ -126,7 +118,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(440.dp)
-                        .background(Cartao, RoundedCornerShape(12.dp))
+                        .background(colorResource(R.color.Cartao), RoundedCornerShape(12.dp))
                         .padding(18.dp)
                 ) {
                     Row(
@@ -154,7 +146,7 @@ fun HomeScreen(
                             ) {
                                 Text(
                                     text = item,
-                                    color = TextoClaro,
+                                    color = colorResource(R.color.TextoClaro),
                                     fontSize = 12.sp
                                 )
                             }
@@ -174,7 +166,7 @@ fun HomeScreen(
 
                     Text(
                         text = "Detecções de IA e registros manuais",
-                        color = TextoClaro,
+                        color = colorResource(R.color.TextoClaro),
                         fontSize = 12.sp
                     )
 
@@ -208,8 +200,8 @@ fun HomeScreen(
                     .fillMaxWidth(0.78f)
                     .padding(top = 95.dp, bottom = 12.dp)
                     .zIndex(3f)
-                    .background(Cartao)
-                    .border(2.dp, Laranja)
+                    .background(colorResource(R.color.Cartao))
+                    .border(2.dp,colorResource(R.color.Laranja))
                     .verticalScroll(rememberScrollState())
                     .clickable(enabled = false) {}
                     .padding(14.dp)
@@ -222,7 +214,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(Laranja, RoundedCornerShape(5.dp)),
+                            .background(colorResource(R.color.Laranja), RoundedCornerShape(5.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -237,7 +229,7 @@ fun HomeScreen(
 
                     Text(
                         "CENTRAL",
-                        color = Salmao,
+                        color = colorResource(R.color.Salmao),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -285,7 +277,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         "ADMINISTRADOR",
-                        color = TextoClaro,
+                        color = colorResource(R.color.TextoClaro),
                         fontSize = 12.sp
                     )
 
@@ -329,7 +321,7 @@ private fun Indicador(
         modifier = Modifier
             .fillMaxWidth()
             .height(155.dp)
-            .background(Cartao, RoundedCornerShape(12.dp))
+            .background(colorResource(R.color.Cartao), RoundedCornerShape(12.dp))
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -342,14 +334,14 @@ private fun Indicador(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        Color(0xFF343434),
+                        colorResource(R.color.Cartao),
                         RoundedCornerShape(8.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     simbolo,
-                    color = Salmao,
+                    color = colorResource(R.color.Salmao),
                     fontSize = 24.sp
                 )
             }
@@ -357,7 +349,7 @@ private fun Indicador(
             if (variacao != null) {
                 Text(
                     text = variacao,
-                    color = Salmao,
+                    color = colorResource(R.color.Salmao),
                     fontSize = 12.sp
                 )
             }
@@ -373,7 +365,7 @@ private fun Indicador(
 
             Text(
                 text = titulo,
-                color = TextoClaro,
+                color = colorResource(R.color.TextoClaro),
                 fontSize = 13.sp
             )
         }
@@ -398,7 +390,7 @@ private fun ItemMenu(
         ) {
             Text(
                 text = simbolo,
-                color = if (selecionado) Laranja else TextoClaro,
+                color = if (selecionado) colorResource(R.color.Laranja) else colorResource(R.color.TextoClaro),
                 fontSize = 21.sp
             )
 
@@ -406,7 +398,7 @@ private fun ItemMenu(
 
             Text(
                 text = titulo,
-                color = if (selecionado) Laranja else TextoClaro,
+                color = if (selecionado) colorResource(R.color.Laranja) else colorResource(R.color.TextoClaro),
                 fontSize = 13.sp,
                 fontWeight = if (selecionado)
                     FontWeight.Bold else FontWeight.Normal

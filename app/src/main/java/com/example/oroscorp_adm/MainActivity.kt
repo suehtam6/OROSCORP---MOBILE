@@ -21,11 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.oroscorp_adm.screens.EsqueceuSenhaScreen
-import com.example.oroscorp_adm.screens.HomeScreen
-import com.example.oroscorp_adm.screens.FuncionariosScreen
-import com.example.oroscorp_adm.screens.RedefinirSenhaCodigo
-import com.example.oroscorp_adm.screens.TrocarSenhaScreen
+import com.example.oroscorp_adm.view.screens.EsqueceuSenhaScreen
+import com.example.oroscorp_adm.view.screens.HomeScreen
+import com.example.oroscorp_adm.view.screens.FuncionariosScreen
+import com.example.oroscorp_adm.view.screens.RedefinirSenhaCodigo
+import com.example.oroscorp_adm.view.screens.TrocarSenhaScreen
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
 
 class MainActivity : ComponentActivity() {

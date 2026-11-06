@@ -1,5 +1,4 @@
-
-package com.example.oroscorp_adm.screens
+package com.example.oroscorp_adm.view.screens
 
 import com.example.oroscorp_adm.R
 import androidx.compose.foundation.*
@@ -12,17 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val Laranja = Color(0xFFFF8A00)
-private val Salmao = Color(0xFFFFB58C)
-private val Fundo = Color(0xFF353535)
-private val Cartao = Color(0xFF1E2020)
-private val Borda = Color(0xFF59402F)
 
 data class Funcionario(
     val nome: String,
@@ -52,7 +47,7 @@ fun FuncionariosScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Fundo)
+            .background(colorResource(R.color.Fundo))
     ) {
         // CABEÇALHO
         Row(
@@ -81,13 +76,13 @@ fun FuncionariosScreen(
                     .size(55.dp)
                     .border(
                         2.5.dp,
-                        Laranja,
+                        colorResource(R.color.Laranja),
                         RoundedCornerShape(18.dp)
                     )
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Text("←", color = Laranja, fontSize = 34.sp)
+                Text("←", color = colorResource(R.color.Laranja), fontSize = 34.sp)
             }
         }
 
@@ -104,7 +99,7 @@ fun FuncionariosScreen(
                     modifier = Modifier
                         .width(7.dp)
                         .height(30.dp)
-                        .background(Salmao, RoundedCornerShape(3.dp))
+                        .background(colorResource(R.color.Salmao), RoundedCornerShape(3.dp))
                 )
 
                 Spacer(Modifier.width(12.dp))
@@ -133,9 +128,9 @@ fun FuncionariosScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Borda, RoundedCornerShape(9.dp))
+                    .border(1.dp, colorResource(R.color.Borda), RoundedCornerShape(9.dp))
                     .clip(RoundedCornerShape(9.dp))
-                    .background(Cartao)
+                    .background(colorResource(R.color.Cartao))
             ) {
                 Box(
                     modifier = Modifier
@@ -151,7 +146,7 @@ fun FuncionariosScreen(
                     )
                 }
 
-                HorizontalDivider(color = Borda)
+                HorizontalDivider(color = colorResource(R.color.Borda))
 
                 Row(
                     modifier = Modifier
@@ -203,7 +198,7 @@ fun FuncionariosScreen(
                     }
                 }
 
-                HorizontalDivider(color = Borda)
+                HorizontalDivider(color = colorResource(R.color.Borda))
 
                 Row(
                     modifier = Modifier
@@ -223,7 +218,7 @@ fun FuncionariosScreen(
                                     .size(29.dp)
                                     .clip(RoundedCornerShape(4.dp))
                                     .background(
-                                        if (numero == pagina) Salmao
+                                        if (numero == pagina) colorResource(R.color.Salmao)
                                         else Color.Transparent
                                     )
                                     .clickable { paginaAtual = numero },
@@ -232,7 +227,7 @@ fun FuncionariosScreen(
                                 Text(
                                     "$numero",
                                     color = if (numero == pagina)
-                                        Color.Black else Salmao,
+                                        Color.Black else colorResource(R.color.Salmao),
                                     fontSize = 12.sp
                                 )
                             }
@@ -317,9 +312,9 @@ private fun BotaoPagina(
         contentPadding = PaddingValues(horizontal = 8.dp),
         modifier = Modifier.height(32.dp),
         shape = RoundedCornerShape(5.dp),
-        border = BorderStroke(1.dp, Borda),
+        border = BorderStroke(1.dp, colorResource(R.color.Borda)),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = Salmao,
+            contentColor = colorResource(R.color.Salmao),
             disabledContentColor = Color.Gray
         )
     ) {

@@ -1,4 +1,5 @@
-package com.example.oroscorp_adm.screens
+package com.example.oroscorp_adm.view.screens
+
 import com.example.oroscorp_adm.R
 
 import androidx.compose.foundation.Image
@@ -17,11 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun EsqueceuSenhaScreen(
+fun RedefinirSenhaCodigo(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit // Parâmetro adicionado para avançar a tela
+    onContinueClick: () -> Unit // Parâmetro para ação de continuar
 ) {
-    var email by remember { mutableStateOf("") }
+    var codigo by remember { mutableStateOf("") } // Ajustado de email para codigo
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -57,7 +58,7 @@ fun EsqueceuSenhaScreen(
 
             // Instrução
             Text(
-                text = "DIGITE SEU E-MAIL PARA\nPODERMOS REDEFINIR\nSUA SENHA",
+                text = "DIGITE O CÓDIGO PARA REDEFINIÇÃO DA SENHA",
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
@@ -66,11 +67,11 @@ fun EsqueceuSenhaScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Caixa de Texto (E-mail)
+            // Caixa de Texto (Código)
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("E-mail", color = Color.Gray) },
+                value = codigo,
+                onValueChange = { codigo = it },
+                placeholder = { Text("CÓDIGO", color = Color.Gray) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -87,7 +88,7 @@ fun EsqueceuSenhaScreen(
 
             // Botão Continue
             Button(
-                onClick = { onContinueClick() }, // Aciona a transição para a próxima tela
+                onClick = { onContinueClick() }, // Aciona a ação de continuar
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
