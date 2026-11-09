@@ -1,7 +1,6 @@
-package com.example.oroscorp_adm.screens
+package com.example.oroscorp_adm.view.screens
 
 import com.example.oroscorp_adm.R
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,16 +12,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun RedefinirSenhaCodigo(
+fun TrocarSenhaScreen(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit // Parâmetro para ação de continuar
+    onRedefinirClick: () -> Unit
 ) {
-    var codigo by remember { mutableStateOf("") } // Ajustado de email para codigo
+    var novaSenha by remember { mutableStateOf("") }
+    var confirmarSenha by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -54,24 +55,25 @@ fun RedefinirSenhaCodigo(
                 contentScale = ContentScale.Fit
             )
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
             // Instrução
             Text(
-                text = "DIGITE O CÓDIGO PARA REDEFINIÇÃO DA SENHA",
+                text = "DIGITE SUA NOVA SENHA PARA\nPODERMOS REDEFINIR\nSUA SENHA",
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Caixa de Texto (Código)
+            // Caixa de Texto (Senha)
             OutlinedTextField(
-                value = codigo,
-                onValueChange = { codigo = it },
-                placeholder = { Text("CÓDIGO", color = Color.Gray) },
+                value = novaSenha,
+                onValueChange = { novaSenha = it },
+                placeholder = { Text("SENHA", color = Color.Gray) },
+                visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -84,11 +86,31 @@ fun RedefinirSenhaCodigo(
                 )
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão Continue
+            // Caixa de Texto (Confirmar Senha)
+            OutlinedTextField(
+                value = confirmarSenha,
+                onValueChange = { confirmarSenha = it },
+                placeholder = { Text("CONFIRMAR SENHA", color = Color.Gray) },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = Color(0xFFF5F3F3),
+                    focusedContainerColor = Color(0xFFF5F3F3),
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent
+                )
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botão Redefinir
             Button(
-                onClick = { onContinueClick() }, // Aciona a ação de continuar
+                onClick = { onRedefinirClick() },
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
@@ -98,7 +120,7 @@ fun RedefinirSenhaCodigo(
                 )
             ) {
                 Text(
-                    text = "CONTINUE",
+                    text = "REDEFINIR",
                     color = Color(0xFFFF7200),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
