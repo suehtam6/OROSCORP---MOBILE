@@ -72,7 +72,7 @@ fun TrocarSenhaScreen(
             OutlinedTextField(
                 value = novaSenha,
                 onValueChange = { novaSenha = it },
-                placeholder = { Text("SENHA", color = Color.Gray) },
+                placeholder = { Text("Senha", color = Color.Gray) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -92,7 +92,7 @@ fun TrocarSenhaScreen(
             OutlinedTextField(
                 value = confirmarSenha,
                 onValueChange = { confirmarSenha = it },
-                placeholder = { Text("CONFIRMAR SENHA", color = Color.Gray) },
+                placeholder = { Text("Confirmar Senha", color = Color.Gray) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier
                     .fillMaxWidth()

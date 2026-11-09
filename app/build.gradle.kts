@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.example.oroscorp_adm"
     compileSdk {
-        version = release(37)
+        version = release(36)
     }
 
     defaultConfig {

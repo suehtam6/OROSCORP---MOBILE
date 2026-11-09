@@ -1,4 +1,3 @@
-
 package com.example.oroscorp_adm
 
 import android.os.Bundle
@@ -21,10 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.oroscorp_adm.view.screens.CamerasScreen
 import com.example.oroscorp_adm.view.screens.EsqueceuSenhaScreen
-import com.example.oroscorp_adm.view.screens.HomeScreen
 import com.example.oroscorp_adm.view.screens.FuncionariosScreen
+import com.example.oroscorp_adm.view.screens.HomeScreen
+import com.example.oroscorp_adm.view.screens.OcorrenciasScreen
 import com.example.oroscorp_adm.view.screens.RedefinirSenhaCodigo
+import com.example.oroscorp_adm.view.screens.RegistrarOcorrenciaScreen
 import com.example.oroscorp_adm.view.screens.TrocarSenhaScreen
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
 
@@ -64,13 +66,47 @@ fun AppNavigation() {
             HomeScreen(
                 onDashboardClick = { telaAtual = "home" },
                 onSetoresClick = {},
-                onCamerasClick = {},
-                onOcorrenciasClick = {},
+                onCamerasClick = {
+                    telaAtual = "cameras"
+                },
+                onOcorrenciasClick = {
+                    telaAtual = "ocorrencias"
+                },
                 onFuncionariosClick = {
                     telaAtual = "funcionarios"
                 },
                 onSairClick = {
                     telaAtual = "login"
+                }
+            )
+        }
+
+        "cameras" -> {
+            CamerasScreen(
+                onBackClick = {
+                    telaAtual = "home"
+                }
+            )
+        }
+
+        "ocorrencias" -> {
+            OcorrenciasScreen(
+                onBackClick = {
+                    telaAtual = "home"
+                },
+                onRegistrarClick = {
+                    telaAtual = "registrar_ocorrencia"
+                }
+            )
+        }
+
+        "registrar_ocorrencia" -> {
+            RegistrarOcorrenciaScreen(
+                onBackClick = {
+                    telaAtual = "ocorrencias"
+                },
+                onRegistrarSucesso = {
+                    telaAtual = "ocorrencias"
                 }
             )
         }
@@ -154,7 +190,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("E-mail", color = Color.Gray) },
+                placeholder = { Text("e-mail", color = Color.Gray) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,7 +211,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("SENHA", color = Color.Gray) },
+                placeholder = { Text("Senha", color = Color.Gray) },
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier

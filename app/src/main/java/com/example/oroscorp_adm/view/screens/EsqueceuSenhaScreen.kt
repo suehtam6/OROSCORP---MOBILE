@@ -70,7 +70,7 @@ fun EsqueceuSenhaScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("E-mail", color = Color.Gray) },
+                placeholder = { Text("e-mail", color = Color.Gray) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

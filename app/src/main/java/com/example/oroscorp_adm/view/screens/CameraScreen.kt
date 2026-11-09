@@ -1,2 +1,2 @@
-package com.example.oroscorp_adm.view.screens
+ package com.example.oroscorp_adm.view.screens
 
