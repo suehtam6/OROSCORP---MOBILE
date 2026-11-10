@@ -5,28 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.oroscorp_adm.view.screens.EsqueceuSenhaScreen
-import com.example.oroscorp_adm.view.screens.HomeScreen
-import com.example.oroscorp_adm.view.screens.FuncionariosScreen
-import com.example.oroscorp_adm.view.screens.RedefinirSenhaCodigo
-import com.example.oroscorp_adm.view.screens.TrocarSenhaScreen
+import com.example.oroscorp_adm.model.Camera
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
+import com.example.oroscorp_adm.view.screens.*
 
 class MainActivity : ComponentActivity() {
 
@@ -49,23 +35,54 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation() {
-    var telaAtual by remember { mutableStateOf("login") }
+
+    var telaAtual by remember {
+        mutableStateOf("login")
+    }
+
+    var cameraSelecionada by remember {
+        mutableIntStateOf(0)
+    }
+
+    // Lista de câmeras recebidas futuramente da API
+    val cameras = remember {
+        mutableStateListOf<Camera>()
+    }
+
+    // Ocorrência selecionada para visualização
+    var ocorrenciaSelecionada by remember {
+        mutableStateOf<DetalhesOcorrencia?>(null)
+    }
 
     when (telaAtual) {
 
+        // LOGIN
         "login" -> {
             LoginScreen(
-                onEntrarClick = { telaAtual = "home" },
-                onEsqueceuSenhaClick = { telaAtual = "esqueceu" }
+                onEntrarClick = {
+                    telaAtual = "home"
+                },
+                onEsqueceuSenhaClick = {
+                    telaAtual = "esqueceu"
+                }
             )
         }
 
+        // DASHBOARD
         "home" -> {
             HomeScreen(
-                onDashboardClick = { telaAtual = "home" },
-                onSetoresClick = {},
-                onCamerasClick = {},
-                onOcorrenciasClick = {},
+                onDashboardClick = {
+                    telaAtual = "home"
+                },
+                onSetoresClick = {
+                    telaAtual = "setores"
+                },
+                onCamerasClick = {
+                    telaAtual = "cameras"
+                },
+                onOcorrenciasClick = {
+                    telaAtual = "ocorrencias"
+                },
                 onFuncionariosClick = {
                     telaAtual = "funcionarios"
                 },
@@ -75,6 +92,7 @@ fun AppNavigation() {
             )
         }
 
+        // FUNCIONÁRIOS
         "funcionarios" -> {
             FuncionariosScreen(
                 onBackClick = {
@@ -83,149 +101,164 @@ fun AppNavigation() {
             )
         }
 
-        "esqueceu" -> {
-            EsqueceuSenhaScreen(
-                onBackClick = { telaAtual = "login" },
-                onContinueClick = { telaAtual = "codigo" }
+        // SETORES
+        // Ative quando a função SetoresScreen
+        // estiver com o parâmetro onBackClick
+        /*
+        "setores" -> {
+            SetoresScreen(
+                onBackClick = {
+                    telaAtual = "home"
+                }
+            )
+        }
+        */
+
+        // LISTA DE CÂMERAS
+        "cameras" -> {
+            CamerasScreen(
+                cameras = cameras,
+
+                onBackClick = {
+                    telaAtual = "home"
+                },
+
+                onCameraClick = { index ->
+                    if (index in cameras.indices) {
+                        cameraSelecionada = index
+                        telaAtual = "camera"
+                    }
+                }
             )
         }
 
-        "codigo" -> {
-            RedefinirSenhaCodigo(
-                onBackClick = { telaAtual = "esqueceu" },
-                onContinueClick = { telaAtual = "trocar" }
-            )
-        }
+        // VISUALIZAÇÃO DA CÂMERA
+        "camera" -> {
+            val camera = cameras.getOrNull(cameraSelecionada)
 
-        "trocar" -> {
-            TrocarSenhaScreen(
-                onBackClick = { telaAtual = "codigo" },
-                onRedefinirClick = { telaAtual = "login" }
-            )
-        }
-    }
-}
+            if (camera != null) {
+                CameraScreen(
+                    nomeCamera = camera.nome,
+                    videoUrl = camera.videoUrl,
+                    online = camera.online,
 
-@Composable
-fun LoginScreen(
-    onEntrarClick: () -> Unit,
-    onEsqueceuSenhaClick: () -> Unit
-) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+                    onBackClick = {
+                        telaAtual = "cameras"
+                    },
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.fundo),
-            contentDescription = "Fundo",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+                    temAnterior = cameraSelecionada > 0,
+                    temProxima = cameraSelecionada < cameras.lastIndex,
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(Modifier.height(40.dp))
+                    onAnteriorClick = {
+                        if (cameraSelecionada > 0) {
+                            cameraSelecionada--
+                        }
+                    },
 
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo Oroscorp",
-                modifier = Modifier
-                    .width(180.dp)
-                    .height(50.dp),
-                contentScale = ContentScale.Fit
-            )
-
-            Spacer(Modifier.height(80.dp))
-
-            Text(
-                text = "ENTRE NA SUA CONTA",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("E-mail", color = Color.Gray) },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    unfocusedContainerColor = Color(0xFFF5F3F3),
-                    focusedContainerColor = Color(0xFFF5F3F3),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                    onProximaClick = {
+                        if (cameraSelecionada < cameras.lastIndex) {
+                            cameraSelecionada++
+                        }
+                    }
                 )
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = { Text("SENHA", color = Color.Gray) },
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    unfocusedContainerColor = Color(0xFFF5F3F3),
-                    focusedContainerColor = Color(0xFFF5F3F3),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
-                )
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                TextButton(onClick = onEsqueceuSenhaClick) {
-                    Text(
-                        "Esqueceu sua senha?",
-                        color = Color.White,
-                        fontSize = 12.sp
-                    )
+            } else {
+                LaunchedEffect(Unit) {
+                    telaAtual = "cameras"
                 }
             }
+        }
 
-            Spacer(Modifier.height(24.dp))
+        // LISTA DE OCORRÊNCIAS
+        "ocorrencias" -> {
+            OcorrenciasScreen(
+                onBackClick = {
+                    telaAtual = "home"
+                },
 
-            Button(
-                onClick = onEntrarClick,
-                modifier = Modifier
-                    .width(160.dp)
-                    .height(48.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF5F3F3)
-                )
-            ) {
-                Text(
-                    "ENTRAR",
-                    color = Color(0xFFFF7200),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                onRegistrarClick = {
+                    telaAtual = "registrarOcorrencia"
+                },
+
+                onDetalhesClick = { ocorrencia ->
+                    ocorrenciaSelecionada = ocorrencia
+                    telaAtual = "detalhesOcorrencia"
+                }
+            )
+        }
+
+        // REGISTRAR OCORRÊNCIA
+        "registrarOcorrencia" -> {
+            RegistrarOcorrenciaScreen(
+                onBackClick = {
+                    telaAtual = "ocorrencias"
+                },
+
+                onRegistrarSucesso = {
+                    telaAtual = "ocorrencias"
+                }
+            )
+        }
+
+        // DETALHES DA OCORRÊNCIA
+        "detalhesOcorrencia" -> {
+            DetalhesOcorrenciaScreen(
+                ocorrencia = ocorrenciaSelecionada,
+
+                onBackClick = {
+                    telaAtual = "ocorrencias"
+                },
+
+                onAdicionarFuncionario = {
+                    // Futuramente selecionar funcionário pela API
+                },
+
+                onAlterarStatus = {
+                    // Futuramente atualizar status pela API
+                },
+
+                onExportarPDF = {
+                    // Futuramente gerar relatório PDF
+                }
+            )
+        }
+
+        // ESQUECEU SENHA
+        "esqueceu" -> {
+            EsqueceuSenhaScreen(
+                onBackClick = {
+                    telaAtual = "login"
+                },
+
+                onContinueClick = {
+                    telaAtual = "codigo"
+                }
+            )
+        }
+
+        // CÓDIGO DE RECUPERAÇÃO
+        "codigo" -> {
+            RedefinirSenhaCodigo(
+                onBackClick = {
+                    telaAtual = "esqueceu"
+                },
+
+                onContinueClick = {
+                    telaAtual = "trocar"
+                }
+            )
+        }
+
+        // TROCAR SENHA
+        "trocar" -> {
+            TrocarSenhaScreen(
+                onBackClick = {
+                    telaAtual = "codigo"
+                },
+
+                onRedefinirClick = {
+                    telaAtual = "login"
+                }
+            )
         }
     }
 }
