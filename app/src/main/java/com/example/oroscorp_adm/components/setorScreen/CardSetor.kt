@@ -15,14 +15,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.oroscorp_adm.R
+import com.example.oroscorp_adm.model.Camera
+import com.example.oroscorp_adm.model.Funcionario
+import com.example.oroscorp_adm.model.Ocorrencia
+import com.example.oroscorp_adm.model.Setor
 
 @Composable
 fun CardSetor(
-    titulo: String,
-    descricao: String,
-    funcionarios: Int? = null,
-    cameras: Int? = null,
-    ocorrenciasAbertas: Int? = null,
+    setor: Setor,
+    funcionarios: List<Funcionario>,
+    cameras: List<Camera>,
+    ocorrencias: List<Ocorrencia>,
     onClick: () -> Unit = {}
 ) {
     Card(
@@ -38,14 +41,14 @@ fun CardSetor(
         ) {
             Column {
                 Text(
-                    text = titulo,
+                    text = setor.nome,
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = descricao,
+                    text = setor.descricao,
                     color = colorResource(R.color.TextoClaro),
                     fontSize = 13.sp
                 )
@@ -58,7 +61,7 @@ fun CardSetor(
                 Box(modifier = Modifier.weight(1f)) {
                     SubCardSetores(
                         icone = "",
-                        quantidade = funcionarios,
+                        quantidade = funcionarios.size,
                         titulo = "Funcionários"
                     )
                 }
@@ -66,7 +69,7 @@ fun CardSetor(
                 Box(modifier = Modifier.weight(1f)) {
                     SubCardSetores(
                         icone = "",
-                        quantidade = cameras,
+                        quantidade = cameras.size, //?????
                         titulo = "Câmeras"
                     )
                 }
@@ -74,7 +77,7 @@ fun CardSetor(
                 Box(modifier = Modifier.weight(1f)) {
                     SubCardSetores(
                         icone = "",
-                        quantidade = ocorrenciasAbertas,
+                        quantidade = ocorrencias.size, //???????
                         titulo = "Ocorrências abertas"
                     )
                 }

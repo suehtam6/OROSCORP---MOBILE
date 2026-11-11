@@ -19,14 +19,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.oroscorp_adm.model.StatusCamera
 
 @Composable
 fun CamerasScreen(
     onBackClick: () -> Unit,
     cameras: List<Camera> = emptyList(),
+    statusCamera: StatusCamera,
+    statusCameras: List <StatusCamera>,
     onCameraClick: (Int) -> Unit = {}
 ) {
-    val online = cameras.count { it.online }
+    //val online = statusCameras.count { it.status }
 
     Column(
         modifier = Modifier
@@ -99,7 +102,7 @@ fun CamerasScreen(
             Spacer(Modifier.height(5.dp))
 
             Text(
-                text = "$online de ${cameras.size} câmeras online",
+                text = " ${cameras.size} câmeras online",
                 color = colorResource(R.color.Salmao),
                 fontSize = 12.sp
             )
@@ -146,7 +149,8 @@ fun CamerasScreen(
                 cameras.forEachIndexed { index, camera ->
                     CardCamera(
                         camera = camera,
-                        onClick = { onCameraClick(index) }
+                        onClick = { onCameraClick(index) },
+                        statusCamera = TODO()
                     )
 
                     Spacer(Modifier.height(16.dp))
@@ -159,6 +163,7 @@ fun CamerasScreen(
 @Composable
 private fun CardCamera(
     camera: Camera,
+    statusCamera: StatusCamera,
     onClick: () -> Unit
 ) {
     val salmao = colorResource(R.color.Salmao)
@@ -183,11 +188,11 @@ private fun CardCamera(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = if (camera.online)
+                text = if (statusCamera.status == "online")
                     "VISUALIZAR CÂMERA"
                 else
                     "SEM SINAL",
-                color = if (camera.online)
+                color = if (statusCamera.status == "online")
                     salmao else Color.Gray,
                 fontSize = 13.sp
             )
@@ -200,11 +205,11 @@ private fun CardCamera(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 StatusCamera(
-                    if (camera.online) "● ONLINE"
+                    if (statusCamera.status == "online") "● ONLINE"
                     else "● OFFLINE"
                 )
 
-                if (camera.online) {
+                if (statusCamera.status == "online") {
                     StatusCamera("● AO VIVO")
                 }
             }
@@ -227,13 +232,13 @@ private fun CardCamera(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    camera.setor,
+                    "$camera.idSetor",
                     color = colorResource(R.color.TextoClaro),
                     fontSize = 12.sp
                 )
 
                 Text(
-                    camera.ip,
+                    camera.nome,
                     color = Color.Gray,
                     fontSize = 11.sp
                 )
@@ -251,20 +256,9 @@ private fun CardCamera(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    "${camera.pessoas ?: "-"} pessoas",
-                    color = Color.LightGray,
-                    fontSize = 11.sp
-                )
 
-                Text(
-                    "${camera.alertas ?: "-"} alertas",
-                    color = salmao,
-                    fontSize = 11.sp
-                )
-
-                Text(
-                    "${camera.ocorrencias ?: "-"} ocorr.",
+                Text(text = "",
+                    //"${camera.ocorrencias ?: "-"} ocorr.",
                     color = Color.LightGray,
                     fontSize = 11.sp
                 )

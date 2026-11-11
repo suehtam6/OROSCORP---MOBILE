@@ -11,8 +11,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.oroscorp_adm.model.Camera
+import com.example.oroscorp_adm.model.StatusCamera
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
 import com.example.oroscorp_adm.view.screens.*
+import kotlin.Int
+import kotlin.String
 
 class MainActivity : ComponentActivity() {
 
@@ -128,7 +131,10 @@ fun AppNavigation() {
                         cameraSelecionada = index
                         telaAtual = "camera"
                     }
-                }
+                },
+                statusCamera = StatusCamera(idStatusCamera = 0,
+                status =""),
+                statusCameras = emptyList()
             )
         }
 
@@ -139,8 +145,8 @@ fun AppNavigation() {
             if (camera != null) {
                 CameraScreen(
                     nomeCamera = camera.nome,
-                    videoUrl = camera.videoUrl,
-                    online = camera.online,
+                    videoUrl = camera.enderecoStream,
+
 
                     onBackClick = {
                         telaAtual = "cameras"
