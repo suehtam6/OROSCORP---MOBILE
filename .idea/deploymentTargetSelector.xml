@@ -2,19 +2,9 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="Run">
+      <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-<<<<<<< HEAD
-        <DropdownSelection timestamp="2026-11-09T16:37:27.042255Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/25203692/.android/avd/Medium_Phone.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
         <DialogSelection />
-=======
->>>>>>> 98f5caf94ec1b82fa099632b1e11a2928e1e1189
       </SelectionState>
     </selectionStates>
   </component>
