@@ -14,8 +14,6 @@ import com.example.oroscorp_adm.model.Camera
 import com.example.oroscorp_adm.model.StatusCamera
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
 import com.example.oroscorp_adm.view.screens.*
-import kotlin.Int
-import kotlin.String
 
 class MainActivity : ComponentActivity() {
 
@@ -44,6 +42,11 @@ fun AppNavigation() {
     }
 
     var cameraSelecionada by remember {
+        mutableIntStateOf(0)
+    }
+
+    // Setor selecionado para visualizar os detalhes
+    var setorSelecionado by remember {
         mutableIntStateOf(0)
     }
 
@@ -105,17 +108,27 @@ fun AppNavigation() {
         }
 
         // SETORES
-        // Ative quando a função SetoresScreen
-        // estiver com o parâmetro onBackClick
-        /*
         "setores" -> {
             SetoresScreen(
-                onBackClick = {
+                onVoltar = {
                     telaAtual = "home"
+                },
+                onAbrirSetor = { id ->
+                    setorSelecionado = id
+                    telaAtual = "detalhes_setor"
                 }
             )
         }
-        */
+
+        // DETALHES DO SETOR
+        "detalhes_setor" -> {
+            DetalhesSetorScreen(
+                setorId = setorSelecionado,
+                onVoltar = {
+                    telaAtual = "setores"
+                }
+            )
+        }
 
         // LISTA DE CÂMERAS
         "cameras" -> {
@@ -132,8 +145,12 @@ fun AppNavigation() {
                         telaAtual = "camera"
                     }
                 },
-                statusCamera = StatusCamera(idStatusCamera = 0,
-                status =""),
+
+                statusCamera = StatusCamera(
+                    idStatusCamera = 0,
+                    status = ""
+                ),
+
                 statusCameras = emptyList()
             )
         }
@@ -146,7 +163,6 @@ fun AppNavigation() {
                 CameraScreen(
                     nomeCamera = camera.nome,
                     videoUrl = camera.enderecoStream,
-
 
                     onBackClick = {
                         telaAtual = "cameras"

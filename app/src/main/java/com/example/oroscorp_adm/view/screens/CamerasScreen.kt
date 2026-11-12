@@ -3,11 +3,14 @@ package com.example.oroscorp_adm.view.screens
 
 import com.example.oroscorp_adm.R
 import com.example.oroscorp_adm.model.Camera
+import com.example.oroscorp_adm.model.StatusCamera
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,25 +20,76 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.oroscorp_adm.model.StatusCamera
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CamerasScreen(
     onBackClick: () -> Unit,
     cameras: List<Camera> = emptyList(),
     statusCamera: StatusCamera,
-    statusCameras: List <StatusCamera>,
+    statusCameras: List<StatusCamera>,
     onCameraClick: (Int) -> Unit = {}
 ) {
-    //val online = statusCameras.count { it.status }
+    val laranja = colorResource(R.color.Laranja)
+    val salmao = colorResource(R.color.Salmao)
+    val textoClaro = colorResource(R.color.TextoClaro)
+    val cartao = colorResource(R.color.Cartao)
+    val borda = colorResource(R.color.Borda)
+
+    var pesquisa by remember { mutableStateOf("") }
+    var setorSelecionado by remember { mutableStateOf<Int?>(null) }
+    var menuSetoresAberto by remember { mutableStateOf(false) }
+
+    // Setores encontrados nas câmeras recebidas da API.
+    // Nenhum setor é cadastrado manualmente nesta tela.
+    val setores = cameras
+        .map { it.idSetor }
+        .distinct()
+        .sortedBy { it.toString() }
+
+    // Mantém o índice original para abrir a câmera correta
+    // mesmo quando a lista estiver filtrada.
+    val camerasFiltradas = cameras.withIndex().filter { item ->
+        val camera = item.value
+
+        val correspondePesquisa =
+            pesquisa.isBlank() ||
+                    camera.nome.contains(
+                        pesquisa.trim(),
+                        ignoreCase = true
+                    ) ||
+                    camera.idSetor.toString().contains(
+                        pesquisa.trim(),
+                        ignoreCase = true
+                    )
+
+        val correspondeSetor =
+            setorSelecionado == null ||
+                    camera.idSetor == setorSelecionado
+
+        correspondePesquisa && correspondeSetor
+    }
+
+
+    val camerasOnline = cameras.indices.count { index ->
+        val status = statusCameras.getOrNull(index) ?: statusCamera
+
+        status.status.equals(
+            "online",
+            ignoreCase = true
+        )
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(R.color.Fundo))
     ) {
+
+        // CABEÇALHO ORIGINAL
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -62,15 +116,15 @@ fun CamerasScreen(
                     .size(55.dp)
                     .border(
                         2.5.dp,
-                        colorResource(R.color.Laranja),
+                        laranja,
                         RoundedCornerShape(18.dp)
                     )
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "←",
-                    color = colorResource(R.color.Laranja),
+                    text = "←",
+                    color = laranja,
                     fontSize = 34.sp
                 )
             }
@@ -83,6 +137,7 @@ fun CamerasScreen(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
                 text = "Câmeras",
                 color = Color.White,
@@ -94,7 +149,7 @@ fun CamerasScreen(
 
             Text(
                 text = "Monitoramento em tempo real dos setores",
-                color = colorResource(R.color.TextoClaro),
+                color = textoClaro,
                 fontSize = 13.sp,
                 textAlign = TextAlign.Center
             )
@@ -102,25 +157,168 @@ fun CamerasScreen(
             Spacer(Modifier.height(5.dp))
 
             Text(
-                text = " ${cameras.size} câmeras online",
-                color = colorResource(R.color.Salmao),
+                text = "$camerasOnline câmeras online",
+                color = salmao,
                 fontSize = 12.sp
             )
 
             Spacer(Modifier.height(25.dp))
 
+            // PESQUISA POR CÂMERA
+            OutlinedTextField(
+                value = pesquisa,
+                onValueChange = { pesquisa = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(
+                        text = "Pesquisar câmera...",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                },
+                leadingIcon = {
+                    Text(
+                        text = "⌕",
+                        color = laranja,
+                        fontSize = 27.sp
+                    )
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = laranja,
+                    unfocusedBorderColor = borda,
+                    focusedContainerColor = cartao,
+                    unfocusedContainerColor = cartao,
+                    cursorColor = laranja
+                )
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            // FILTRO DE CÂMERAS POR SETOR
+            ExposedDropdownMenuBox(
+                expanded = menuSetoresAberto,
+                onExpandedChange = {
+                    menuSetoresAberto = !menuSetoresAberto
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = setorSelecionado?.let {
+                        "Setor $it"
+                    } ?: "Todos os setores",
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    label = {
+                        Text("Filtrar por setor")
+                    },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = menuSetoresAberto
+                        )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = laranja,
+                        unfocusedBorderColor = borda,
+                        focusedContainerColor = cartao,
+                        unfocusedContainerColor = cartao,
+                        focusedLabelColor = laranja,
+                        unfocusedLabelColor = textoClaro
+                    )
+                )
+
+                ExposedDropdownMenu(
+                    expanded = menuSetoresAberto,
+                    onDismissRequest = {
+                        menuSetoresAberto = false
+                    },
+                    modifier = Modifier.background(cartao)
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Todos os setores",
+                                color = Color.White
+                            )
+                        },
+                        onClick = {
+                            setorSelecionado = null
+                            menuSetoresAberto = false
+                        }
+                    )
+
+                    setores.forEach { setor ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = "Setor $setor",
+                                    color = Color.White
+                                )
+                            },
+                            onClick = {
+                                setorSelecionado = setor
+                                menuSetoresAberto = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(15.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${camerasFiltradas.size} câmeras encontradas",
+                    color = textoClaro,
+                    fontSize = 12.sp
+                )
+
+                if (pesquisa.isNotBlank() || setorSelecionado != null) {
+                    Text(
+                        text = "Limpar filtros",
+                        color = laranja,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            pesquisa = ""
+                            setorSelecionado = null
+                        }
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // LISTA DE CÂMERAS
             if (cameras.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(250.dp)
                         .background(
-                            colorResource(R.color.Cartao),
+                            cartao,
                             RoundedCornerShape(14.dp)
                         )
                         .border(
                             1.dp,
-                            colorResource(R.color.Borda),
+                            borda,
                             RoundedCornerShape(14.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -130,7 +328,7 @@ fun CamerasScreen(
                         modifier = Modifier.padding(20.dp)
                     ) {
                         Text(
-                            "Nenhuma câmera cadastrada",
+                            text = "Nenhuma câmera cadastrada",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
@@ -139,18 +337,62 @@ fun CamerasScreen(
                         Spacer(Modifier.height(10.dp))
 
                         Text(
-                            "Aguardando dados da API.",
+                            text = "Aguardando dados da API.",
                             color = Color.Gray,
                             fontSize = 13.sp
                         )
                     }
                 }
+            } else if (camerasFiltradas.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(
+                            cartao,
+                            RoundedCornerShape(14.dp)
+                        )
+                        .border(
+                            1.dp,
+                            borda,
+                            RoundedCornerShape(14.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Nenhuma câmera encontrada",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(
+                            text = "Tente alterar a pesquisa ou o setor.",
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
             } else {
-                cameras.forEachIndexed { index, camera ->
+                camerasFiltradas.forEach { item ->
+                    val indexOriginal = item.index
+                    val camera = item.value
+
+                    val statusDaCamera =
+                        statusCameras.getOrNull(indexOriginal)
+                            ?: statusCamera
+
                     CardCamera(
                         camera = camera,
-                        onClick = { onCameraClick(index) },
-                        statusCamera = TODO()
+                        statusCamera = statusDaCamera,
+                        onClick = {
+                            onCameraClick(indexOriginal)
+                        }
                     )
 
                     Spacer(Modifier.height(16.dp))
@@ -167,6 +409,11 @@ private fun CardCamera(
     onClick: () -> Unit
 ) {
     val salmao = colorResource(R.color.Salmao)
+
+    val online = statusCamera.status.equals(
+        "online",
+        ignoreCase = true
+    )
 
     Column(
         modifier = Modifier
@@ -188,12 +435,12 @@ private fun CardCamera(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = if (statusCamera.status == "online")
+                text = if (online) {
                     "VISUALIZAR CÂMERA"
-                else
-                    "SEM SINAL",
-                color = if (statusCamera.status == "online")
-                    salmao else Color.Gray,
+                } else {
+                    "SEM SINAL"
+                },
+                color = if (online) salmao else Color.Gray,
                 fontSize = 13.sp
             )
 
@@ -204,13 +451,12 @@ private fun CardCamera(
                     .padding(10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                StatusCamera(
-                    if (statusCamera.status == "online") "● ONLINE"
-                    else "● OFFLINE"
+                EtiquetaStatusCamera(
+                    if (online) "● ONLINE" else "● OFFLINE"
                 )
 
-                if (statusCamera.status == "online") {
-                    StatusCamera("● AO VIVO")
+                if (online) {
+                    EtiquetaStatusCamera("● AO VIVO")
                 }
             }
         }
@@ -219,7 +465,7 @@ private fun CardCamera(
             modifier = Modifier.padding(14.dp)
         ) {
             Text(
-                camera.nome,
+                text = camera.nome,
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -232,13 +478,13 @@ private fun CardCamera(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "$camera.idSetor",
+                    text = "Setor ${camera.idSetor}",
                     color = colorResource(R.color.TextoClaro),
                     fontSize = 12.sp
                 )
 
                 Text(
-                    camera.nome,
+                    text = camera.nome,
                     color = Color.Gray,
                     fontSize = 11.sp
                 )
@@ -256,9 +502,8 @@ private fun CardCamera(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
-                Text(text = "",
-                    //"${camera.ocorrencias ?: "-"} ocorr.",
+                Text(
+                    text = "",
                     color = Color.LightGray,
                     fontSize = 11.sp
                 )
@@ -268,7 +513,7 @@ private fun CardCamera(
 }
 
 @Composable
-private fun StatusCamera(texto: String) {
+private fun EtiquetaStatusCamera(texto: String) {
     Box(
         modifier = Modifier
             .background(
@@ -280,10 +525,13 @@ private fun StatusCamera(texto: String) {
                 Color(0xFFFF9966),
                 RoundedCornerShape(4.dp)
             )
-            .padding(horizontal = 7.dp, vertical = 4.dp)
+            .padding(
+                horizontal = 7.dp,
+                vertical = 4.dp
+            )
     ) {
         Text(
-            texto,
+            text = texto,
             color = Color.White,
             fontSize = 10.sp
         )

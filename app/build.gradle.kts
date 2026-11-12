@@ -39,6 +39,8 @@ android {
 
 dependencies {
 
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Compose BOM compatível com o ambiente atual
     implementation(platform("androidx.compose:compose-bom:2025.12.00"))
 
