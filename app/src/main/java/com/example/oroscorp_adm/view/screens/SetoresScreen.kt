@@ -26,8 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // CORES
-
-private val fundoSetor = Color(0xFF343434)
 private val cartaoSetor = Color(0xFF14171C)
 private val internoSetor = Color(0xFF1B1F25)
 private val laranjaSetor = Color(0xFFFF7900)
@@ -166,7 +164,7 @@ private fun CartaoSetor(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = cartaoSetor
+            containerColor = colorResource(R.color.Cartao)
         ),
         shape = RoundedCornerShape(18.dp)
     ) {
@@ -253,7 +251,7 @@ fun SetoresScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(fundoSetor)
+            .background(colorResource(R.color.Fundo))
     ) {
         CabecalhoSetor(onVoltar)
 
@@ -543,7 +541,7 @@ fun DetalhesSetorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(fundoSetor)
+            .background(colorResource(R.color.Fundo))
     ) {
         CabecalhoSetor(onVoltar)
 

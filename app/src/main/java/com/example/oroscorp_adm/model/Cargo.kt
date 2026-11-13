@@ -1,6 +1,6 @@
 package com.example.oroscorp_adm.model
 
 data class Cargo(
-    val idCargo: Int,
+    val id: Int,
     val cargo: String
 )

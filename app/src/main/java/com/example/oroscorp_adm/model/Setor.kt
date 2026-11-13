@@ -1,10 +1,10 @@
 package com.example.oroscorp_adm.model
 
 data class Setor(
-    val idSetor: String,
+    val id: Int,
     val nome: String,
     val descricao: String,
     val foto: String,
     val local: String,
-    val idStatusSetor: Int
+    val id_status_setor: Int
 )

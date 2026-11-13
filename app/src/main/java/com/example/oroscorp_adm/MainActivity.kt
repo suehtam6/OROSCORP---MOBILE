@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.oroscorp_adm.model.Camera
 import com.example.oroscorp_adm.model.StatusCamera
+import com.example.oroscorp_adm.service.RetrofitFactory
 import com.example.oroscorp_adm.ui.theme.OroscorpadmTheme
 import com.example.oroscorp_adm.view.screens.*
 
@@ -82,6 +83,7 @@ fun AppNavigation() {
                 },
                 onSetoresClick = {
                     telaAtual = "setores"
+                    val call = RetrofitFactory().getSetorService().getSetores()
                 },
                 onCamerasClick = {
                     telaAtual = "cameras"

@@ -1,6 +1,6 @@
 package com.example.oroscorp_adm.model
 
 data class StatusSetor(
-    val idStatusSetor: Int,
+    val id: Int,
     val status: Int
 )

@@ -1,7 +1,7 @@
 package com.example.oroscorp_adm.model
 
 data class Responsavel(
-    val idResponsavel: Int,
+    val id: Int,
     val cpf: String,
-    val idUsuario: String
+    val id_usuario: String
 )
