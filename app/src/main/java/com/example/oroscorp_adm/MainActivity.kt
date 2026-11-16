@@ -83,7 +83,7 @@ fun AppNavigation() {
                 },
                 onSetoresClick = {
                     telaAtual = "setores"
-                    val call = RetrofitFactory().getSetorService().getSetores()
+                    val call = RetrofitFactory().GetSetorService().GetSetores()
                 },
                 onCamerasClick = {
                     telaAtual = "cameras"

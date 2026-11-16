@@ -9,10 +9,11 @@ class RetrofitFactory {
 
     private val retrofitFactory = Retrofit
         .Builder()
+        .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    fun getSetorService(): SetorService{
+    fun GetSetorService(): SetorService{
         return retrofitFactory.create(SetorService::class.java)
     }
 }
