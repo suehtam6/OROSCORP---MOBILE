@@ -20,7 +20,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TrocarSenhaScreen(
     onBackClick: () -> Unit,
-    onRedefinirClick: () -> Unit
+    onRedefinirClick: () -> Unit,
+    onConfirmarSenha: ((String) -> Unit)? = null,
+    erro: String? = null,
+    carregando: Boolean = false
 ) {
     var novaSenha by remember { mutableStateOf("") }
     var confirmarSenha by remember { mutableStateOf("") }
@@ -110,7 +113,10 @@ fun TrocarSenhaScreen(
 
             // Botão Redefinir
             Button(
-                onClick = { onRedefinirClick() },
+                onClick = { if (novaSenha == confirmarSenha && novaSenha.isNotBlank()) {
+                    if (onConfirmarSenha != null) onConfirmarSenha(novaSenha) else onRedefinirClick()
+                } },
+                enabled = !carregando && novaSenha.isNotBlank() && novaSenha == confirmarSenha,
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
@@ -125,6 +131,10 @@ fun TrocarSenhaScreen(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+            if (!erro.isNullOrBlank()) {
+                Spacer(Modifier.height(16.dp))
+                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
             }
         }
     }

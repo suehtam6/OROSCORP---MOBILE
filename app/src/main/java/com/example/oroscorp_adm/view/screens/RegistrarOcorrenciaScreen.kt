@@ -1,6 +1,9 @@
 package com.example.oroscorp_adm.view.screens
 
-import com.example.oroscorp_adm.R
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,282 +11,213 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.oroscorp_adm.R
+import com.example.oroscorp_adm.model.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.Calendar
 
+/** Payload de UI; não equivale a contrato de POST ainda não documentado. */
+data class OcorrenciaFormulario(
+    val idSetor: Int,
+    val idFuncionario: Int?,
+    val idCamera: Int?,
+    val idMotivo: Int,
+    val idEpi: Int?,
+    val prioridade: String,
+    val descricao: String,
+    val data: String,
+    val horario: String,
+    val evidenciaUri: String?
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegistrarOcorrenciaScreen(
     onBackClick: () -> Unit,
-    onRegistrarSucesso: () -> Unit = {}
+    onRegistrarSucesso: () -> Unit = {},
+    funcionarios: List<Funcionario> = emptyList(),
+    setores: List<Setor> = emptyList(),
+    cameras: List<Camera> = emptyList(),
+    motivos: List<MotivoOcorrencia> = emptyList(),
+    epis: List<Epi> = emptyList(),
+    onRegistrar: ((OcorrenciaFormulario) -> Unit)? = null,
+    carregando: Boolean = false,
+    erroApi: String? = null
 ) {
-    var prioridadeSelecionada by remember { mutableStateOf("Média") }
+    val context = LocalContext.current
+    val fundo = colorResource(R.color.Fundo)
+    val laranja = colorResource(R.color.Laranja)
+    val cartao = colorResource(R.color.Cartao)
+    var idFuncionario by remember { mutableStateOf<Int?>(null) }
+    var idSetor by remember { mutableStateOf<Int?>(null) }
+    var idCamera by remember { mutableStateOf<Int?>(null) }
+    var idMotivo by remember { mutableStateOf<Int?>(null) }
+    var idEpi by remember { mutableStateOf<Int?>(null) }
+    var prioridade by remember { mutableStateOf("Média") }
     var descricao by remember { mutableStateOf("") }
+    var evidencia by remember { mutableStateOf<String?>(null) }
+    var erroValidacao by remember { mutableStateOf<String?>(null) }
+    var data by remember { mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")).format(Date())) }
+    var horario by remember { mutableStateOf(SimpleDateFormat("HH:mm", Locale("pt", "BR")).format(Date())) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.Fundo))
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+    val imagens = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        evidencia = uri?.toString()
+    }
+
+    Column(modifier = Modifier.fillMaxSize().background(fundo)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().height(95.dp).background(Color.Black).padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // CABEÇALHO FIXO NO TOPO
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(95.dp)
-                    .background(Color.Black)
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.logo),
-                    contentDescription = "Logo OROSCORP",
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(75.dp),
-                    contentScale = ContentScale.Fit,
-                    alignment = Alignment.CenterStart
-                )
-
-                Spacer(Modifier.width(10.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(55.dp)
-                        .border(
-                            2.5.dp,
-                            colorResource(R.color.Laranja),
-                            RoundedCornerShape(18.dp)
-                        )
-                        .clickable { onBackClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("←", color = colorResource(R.color.Laranja), fontSize = 34.sp)
-                }
+            Image(painterResource(R.drawable.logo), contentDescription = "Logo OROSCORP",
+                modifier = Modifier.weight(1f).height(75.dp), contentScale = ContentScale.Fit,
+                alignment = Alignment.CenterStart)
+            Box(modifier = Modifier.size(55.dp).border(2.5.dp, laranja, RoundedCornerShape(18.dp))
+                .clickable(onClick = onBackClick), contentAlignment = Alignment.Center) {
+                Text("←", color = laranja, fontSize = 34.sp)
             }
-
-            // CONTEÚDO COM SCROLL ATIVADO (Resolve o corte em baixo)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(20.dp)
-            ) {
-                Spacer(Modifier.height(10.dp))
-
-                // TÍTULO E SUBTÍTULO
-                Text(
-                    text = "Registrar\nocorrência manual",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 34.sp
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                Text(
-                    text = "Ocorrência criada por um operador ou gestor. O funcionário já está identificado.",
-                    color = colorResource(R.color.TextoClaro),
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
-                )
-
-                Spacer(Modifier.height(24.dp))
-
-                // CAMPOS DE SELEÇÃO
-                CampoDropdown("Funcionário", "Selecionar funcionário")
-                Spacer(Modifier.height(16.dp))
-
-                CampoDropdown("Setor", "Selecionar setor")
-                Spacer(Modifier.height(16.dp))
-
-                CampoDropdown("Câmera", "Selecionar câmera")
-                Spacer(Modifier.height(16.dp))
-
-                CampoDropdown("Tipo de ocorrência", "Selecionar tipo")
-                Spacer(Modifier.height(16.dp))
-
-                CampoDropdown("EPI relacionado", "Selecionar EPI")
-                Spacer(Modifier.height(16.dp))
-
-                // DATA E HORÁRIO
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    CampoDataHora("Data", "04/09/2026", "📅", Modifier.weight(1f))
-                    CampoDataHora("Horário", "08:00", "🕒", Modifier.weight(1f))
+        }
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
+            Text("Registrar\nocorrência manual", color = Color.White, fontSize = 28.sp,
+                fontWeight = FontWeight.Bold, lineHeight = 34.sp)
+            Spacer(Modifier.height(8.dp))
+            Text("Os campos são preenchidos com os dados disponíveis da API.",
+                color = Color.LightGray, fontSize = 13.sp)
+            Spacer(Modifier.height(18.dp))
+            Column(Modifier.fillMaxWidth().background(cartao, RoundedCornerShape(16.dp)).padding(12.dp)) {
+                SeletorOcorrencia("Funcionário", "Selecionar funcionário",
+                    funcionarios.map { it.id to it.nome }, idFuncionario) { idFuncionario = it }
+                Spacer(Modifier.height(12.dp))
+                SeletorOcorrencia("Setor", "Selecionar setor", setores.map { it.id to it.nome }, idSetor) {
+                    idSetor = it
+                    idCamera = null
                 }
-
-                Spacer(Modifier.height(20.dp))
-
-                // PRIORIDADE
-                Text("Prioridade", color = colorResource(R.color.TextoClaro), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BotaoPrioridade("Baixa", prioridadeSelecionada == "Baixa", Modifier.weight(1f)) { prioridadeSelecionada = "Baixa" }
-                        BotaoPrioridade("Média", prioridadeSelecionada == "Média", Modifier.weight(1f)) { prioridadeSelecionada = "Média" }
+                Spacer(Modifier.height(12.dp))
+                SeletorOcorrencia("Câmera", "Selecionar câmera",
+                    cameras.filter { idSetor == null || it.id_setor == idSetor }.map { it.id to it.nome }, idCamera) { idCamera = it }
+                Spacer(Modifier.height(12.dp))
+                SeletorOcorrencia("Tipo de ocorrência", "Selecionar motivo",
+                    motivos.map { it.id to it.nome }, idMotivo) { idMotivo = it }
+                Spacer(Modifier.height(12.dp))
+                SeletorOcorrencia("EPI relacionado", "Selecionar EPI", epis.map { it.id to it.nome }, idEpi) { idEpi = it }
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Data", color = Color.LightGray, fontSize = 13.sp)
+                        Spacer(Modifier.height(6.dp))
+                        OutlinedButton(onClick = {
+                            val now = Calendar.getInstance()
+                            DatePickerDialog(context, { _, year, month, day ->
+                                data = "%02d/%02d/%04d".format(day, month + 1, year)
+                            }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show()
+                        }, modifier = Modifier.fillMaxWidth()) { Text(data, color = Color.White, fontSize = 12.sp) }
                     }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BotaoPrioridade("Alta", prioridadeSelecionada == "Alta", Modifier.weight(1f)) { prioridadeSelecionada = "Alta" }
-                        BotaoPrioridade("Crítica", prioridadeSelecionada == "Crítica", Modifier.weight(1f)) { prioridadeSelecionada = "Crítica" }
+                    Column(Modifier.weight(1f)) {
+                        Text("Horário", color = Color.LightGray, fontSize = 13.sp)
+                        Spacer(Modifier.height(6.dp))
+                        OutlinedButton(onClick = {
+                            val now = Calendar.getInstance()
+                            TimePickerDialog(context, { _, hour, minute ->
+                                horario = "%02d:%02d".format(hour, minute)
+                            }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show()
+                        }, modifier = Modifier.fillMaxWidth()) { Text(horario, color = Color.White, fontSize = 12.sp) }
                     }
                 }
-
-                Spacer(Modifier.height(20.dp))
-
-                // DESCRIÇÃO
-                Text("Descrição", color = colorResource(R.color.TextoClaro), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = descricao,
-                    onValueChange = { descricao = it },
-                    placeholder = {
-                        Text("Descreva o que foi observado, o contexto\ne as ações tomadas...", color = Color.Gray, fontSize = 13.sp)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(110.dp),
-                    shape = RoundedCornerShape(12.dp),
+                Spacer(Modifier.height(16.dp))
+                Text("Prioridade", color = Color.LightGray, fontSize = 13.sp)
+                Spacer(Modifier.height(7.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("Baixa", "Média", "Alta", "Crítica").forEach { valor ->
+                        OutlinedButton(
+                            onClick = { prioridade = valor }, modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 2.dp),
+                            border = BorderStroke(1.dp, if (prioridade == valor) laranja else Color.Gray)
+                        ) { Text(valor, fontSize = 10.sp, color = if (prioridade == valor) laranja else Color.White) }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Text("Descrição", color = Color.LightGray, fontSize = 13.sp)
+                Spacer(Modifier.height(6.dp))
+                OutlinedTextField(value = descricao, onValueChange = { descricao = it },
+                    modifier = Modifier.fillMaxWidth().height(110.dp),
+                    placeholder = { Text("Descreva o ocorrido...", color = Color.Gray) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        unfocusedContainerColor = colorResource(R.color.Cartao),
-                        focusedContainerColor = colorResource(R.color.Cartao),
-                        unfocusedBorderColor = colorResource(R.color.Borda),
-                        focusedBorderColor = colorResource(R.color.Laranja)
-                    )
-                )
-
-                Spacer(Modifier.height(20.dp))
-
-                // EVIDÊNCIA
-                Text("Evidência", color = colorResource(R.color.TextoClaro), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(110.dp)
-                        .border(1.dp, colorResource(R.color.Borda), RoundedCornerShape(12.dp))
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(colorResource(R.color.Cartao))
-                        .clickable { },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("🖼", fontSize = 24.sp)
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Clique para enviar uma imagem\nde evidência",
-                            color = Color.Gray,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        focusedContainerColor = fundo, unfocusedContainerColor = fundo,
+                        focusedBorderColor = laranja))
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(onClick = { imagens.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (evidencia == null) "Selecionar evidência" else "Evidência selecionada",
+                        color = Color.White)
+                }
+            }
+            if (!erroValidacao.isNullOrBlank() || !erroApi.isNullOrBlank()) {
+                Spacer(Modifier.height(12.dp))
+                Text(erroValidacao ?: erroApi.orEmpty(), color = Color(0xFFFFA085), fontSize = 12.sp)
+            }
+            Spacer(Modifier.height(18.dp))
+            Button(
+                enabled = !carregando,
+                onClick = {
+                    erroValidacao = when {
+                        idSetor == null -> "Selecione um setor"
+                        idMotivo == null -> "Selecione o motivo da ocorrência"
+                        descricao.isBlank() -> "Informe a descrição"
+                        else -> null
                     }
+                    if (erroValidacao == null && idSetor != null && idMotivo != null) {
+                        if (onRegistrar != null) onRegistrar(
+                            OcorrenciaFormulario(idSetor!!, idFuncionario, idCamera, idMotivo!!,
+                                idEpi, prioridade, descricao, data, horario, evidencia))
+                        else onRegistrarSucesso()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = laranja),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) { Text(if (carregando) "Enviando..." else "Registrar ocorrência", color = Color.Black, fontWeight = FontWeight.Bold) }
+            Spacer(Modifier.height(35.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SeletorOcorrencia(
+    titulo: String, placeholder: String, opcoes: List<Pair<Int, String>>,
+    selecionado: Int?, onSelecionar: (Int?) -> Unit
+) {
+    var aberto by remember { mutableStateOf(false) }
+    Column {
+        Text(titulo, color = Color.LightGray, fontSize = 13.sp)
+        Spacer(Modifier.height(6.dp))
+        ExposedDropdownMenuBox(expanded = aberto, onExpandedChange = { aberto = it }) {
+            OutlinedTextField(
+                value = opcoes.firstOrNull { it.first == selecionado }?.second ?: "",
+                onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth().menuAnchor(),
+                placeholder = { Text(placeholder, color = Color.Gray, fontSize = 12.sp) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = aberto) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                    focusedContainerColor = Color(0xFF171717), unfocusedContainerColor = Color(0xFF171717))
+            )
+            ExposedDropdownMenu(expanded = aberto, onDismissRequest = { aberto = false }) {
+                DropdownMenuItem(text = { Text("Nenhum") }, onClick = { onSelecionar(null); aberto = false })
+                opcoes.forEach { (id, nome) ->
+                    DropdownMenuItem(text = { Text(nome) }, onClick = { onSelecionar(id); aberto = false })
                 }
-
-                Spacer(Modifier.height(30.dp))
-
-                // BOTÃO REGISTRAR OCORRÊNCIA
-                Button(
-                    onClick = { onRegistrarSucesso() },
-                    colors = ButtonDefaults.buttonColors(containerColor = colorResource(R.color.Laranja)),
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(
-                        "Registrar ocorrência",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
-                    )
-                }
-
-                // Espaço extra no final para o scroll passar livremente da barra do sistema
-                Spacer(Modifier.height(50.dp))
             }
         }
-    }
-}
-
-@Composable
-private fun CampoDropdown(titulo: String, placeholder: String) {
-    Column {
-        Text(titulo, color = colorResource(R.color.TextoClaro), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(6.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .background(colorResource(R.color.Cartao), RoundedCornerShape(12.dp))
-                .border(1.dp, colorResource(R.color.Borda), RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(placeholder, color = Color.Gray, fontSize = 13.sp)
-            Text("▾", color = Color.Gray, fontSize = 14.sp)
-        }
-    }
-}
-
-@Composable
-private fun CampoDataHora(titulo: String, valor: String, icone: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(titulo, color = colorResource(R.color.TextoClaro), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(6.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .background(colorResource(R.color.Cartao), RoundedCornerShape(12.dp))
-                .border(1.dp, colorResource(R.color.Borda), RoundedCornerShape(12.dp))
-                .padding(horizontal = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(valor, color = Color.White, fontSize = 13.sp)
-            Text(icone, fontSize = 14.sp)
-        }
-    }
-}
-
-@Composable
-private fun BotaoPrioridade(texto: String, selecionado: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Box(
-        modifier = modifier
-            .height(44.dp)
-            .background(colorResource(R.color.Cartao), RoundedCornerShape(10.dp))
-            .border(
-                1.dp,
-                if (selecionado) colorResource(R.color.Laranja) else colorResource(R.color.Borda),
-                RoundedCornerShape(10.dp)
-            )
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = texto,
-            color = if (selecionado) colorResource(R.color.Laranja) else Color.White,
-            fontWeight = if (selecionado) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 13.sp
-        )
     }
 }

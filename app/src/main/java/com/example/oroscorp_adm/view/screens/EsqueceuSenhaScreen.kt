@@ -19,7 +19,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun EsqueceuSenhaScreen(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit // Parâmetro adicionado para avançar a tela
+    onContinueClick: () -> Unit,
+    onEnviarEmail: ((String) -> Unit)? = null,
+    erro: String? = null,
+    carregando: Boolean = false // Parâmetro adicionado para avançar a tela
 ) {
     var email by remember { mutableStateOf("") }
 
@@ -87,7 +90,8 @@ fun EsqueceuSenhaScreen(
 
             // Botão Continue
             Button(
-                onClick = { onContinueClick() }, // Aciona a transição para a próxima tela
+                onClick = { if (onEnviarEmail != null) onEnviarEmail(email) else onContinueClick() },
+                enabled = !carregando && email.isNotBlank(), // Aciona a transição para a próxima tela
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
@@ -102,6 +106,10 @@ fun EsqueceuSenhaScreen(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+            if (!erro.isNullOrBlank()) {
+                Spacer(Modifier.height(16.dp))
+                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
             }
         }
     }

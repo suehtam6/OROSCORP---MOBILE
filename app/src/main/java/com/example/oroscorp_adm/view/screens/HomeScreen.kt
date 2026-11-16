@@ -25,7 +25,12 @@ fun HomeScreen(
     onCamerasClick: () -> Unit = {},
     onOcorrenciasClick: () -> Unit = {},
     onFuncionariosClick: () -> Unit = {},
-    onSairClick: () -> Unit = {}
+    onSairClick: () -> Unit = {},
+    onPerfilClick: () -> Unit = {},
+    ocorrenciasHoje: String = "--",
+    aguardandoIdentificacao: String = "--",
+    camerasOnline: String = "--",
+    indiceSeguranca: String = "--"
 ) {
     var menuAberto by remember { mutableStateOf(false) }
     var periodo by remember { mutableStateOf("Semana") }
@@ -80,7 +85,7 @@ fun HomeScreen(
                 // INDICADORES DO DASHBOARD
                 Indicador(
                     titulo = "Ocorrências hoje",
-                    valor = "--",
+                    valor = ocorrenciasHoje,
                     simbolo = "⚠",
                     variacao = null
                 )
@@ -89,7 +94,7 @@ fun HomeScreen(
 
                 Indicador(
                     titulo = "Aguardando identificação",
-                    valor = "--",
+                    valor = aguardandoIdentificacao,
                     simbolo = "◎"
                 )
 
@@ -97,7 +102,7 @@ fun HomeScreen(
 
                 Indicador(
                     titulo = "Câmeras online",
-                    valor = "--",
+                    valor = camerasOnline,
                     simbolo = "▣"
                 )
 
@@ -105,7 +110,7 @@ fun HomeScreen(
 
                 Indicador(
                     titulo = "Índice de segurança geral",
-                    valor = "--",
+                    valor = indiceSeguranca,
                     simbolo = "♜"
                 )
 
@@ -274,7 +279,8 @@ fun HomeScreen(
                         .padding(12.dp)
                 ) {
                     Text(
-                        "ADMINISTRADOR",
+                        "ADMINISTRADOR · ver perfil",
+                        modifier = Modifier.clickable { menuAberto = false; onPerfilClick() },
                         color = colorResource(R.color.TextoClaro),
                         fontSize = 12.sp
                     )

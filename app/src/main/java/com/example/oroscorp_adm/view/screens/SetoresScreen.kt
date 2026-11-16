@@ -39,23 +39,25 @@ data class SetorInfo(
     val id: Int,
     val nome: String,
     val descricao: String,
-    val funcionarios: Int,
-    val cameras: Int,
-    val abertas: Int
+    val funcionarios: Int?,
+    val cameras: Int?,
+    val abertas: Int?
 )
 
 data class CameraInfo(
     val id: Int,
     val nome: String,
     val setorId: Int,
-    val online: Boolean
+    val online: Boolean,
+    val statusConhecido: Boolean = true
 )
 
 data class FuncionarioInfo(
     val nome: String,
     val cargo: String,
     val ativo: Boolean,
-    val setorId: Int
+    val setorId: Int,
+    val statusConhecido: Boolean = true
 )
 
 data class OcorrenciaInfo(
@@ -119,7 +121,7 @@ private fun CabecalhoSetor(
 @Composable
 private fun IndicadorSetor(
     titulo: String,
-    numero: Int,
+    numero: Int?,
     modifier: Modifier = Modifier,
     destaque: Boolean = false
 ) {
@@ -137,7 +139,7 @@ private fun IndicadorSetor(
             .padding(12.dp)
     ) {
         Text(
-            text = numero.toString(),
+            text = numero?.toString() ?: "—",
             color = if (destaque) laranjaSetor else Color.White,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold
@@ -393,16 +395,10 @@ private fun LinhaCameraSetor(
         )
 
         Text(
-            text = if (camera.online) {
-                "● ONLINE"
-            } else {
-                "● OFFLINE"
-            },
-            color = if (camera.online) {
-                verdeSetor
-            } else {
-                vermelhoSetor
-            },
+            text = if (!camera.statusConhecido) "● INDISPONÍVEL"
+                else if (camera.online) "● ONLINE" else "● OFFLINE",
+            color = if (!camera.statusConhecido) cinzaSetor
+                else if (camera.online) verdeSetor else vermelhoSetor,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
@@ -445,16 +441,10 @@ private fun LinhaFuncionario(
         )
 
         Text(
-            text = if (funcionario.ativo) {
-                "● ATIVO"
-            } else {
-                "● INATIVO"
-            },
-            color = if (funcionario.ativo) {
-                verdeSetor
-            } else {
-                vermelhoSetor
-            },
+            text = if (!funcionario.statusConhecido) "● INDISPONÍVEL"
+                else if (funcionario.ativo) "● ATIVO" else "● INATIVO",
+            color = if (!funcionario.statusConhecido) cinzaSetor
+                else if (funcionario.ativo) verdeSetor else vermelhoSetor,
             fontSize = 10.sp
         )
     }
@@ -603,7 +593,7 @@ fun DetalhesSetorScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = setor.abertas.toString(),
+                                text = setor.abertas?.toString() ?: "—",
                                 color = laranjaSetor,
                                 fontSize = 34.sp,
                                 fontWeight = FontWeight.Bold
@@ -630,7 +620,7 @@ fun DetalhesSetorScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = setor.cameras.toString(),
+                                text = setor.cameras?.toString() ?: "—",
                                 color = Color.White,
                                 fontSize = 30.sp,
                                 fontWeight = FontWeight.Bold

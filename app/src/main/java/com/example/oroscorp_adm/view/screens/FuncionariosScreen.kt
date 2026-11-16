@@ -18,11 +18,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.oroscorp_adm.model.Funcionario
+import com.example.oroscorp_adm.model.Cargo
 
 @Composable
 fun FuncionariosScreen(
     onBackClick: () -> Unit,
-    funcionarios: List<Funcionario> = emptyList()
+    funcionarios: List<Funcionario> = emptyList(),
+    cargos: List<Cargo> = emptyList()
 ) {
     var paginaAtual by remember { mutableIntStateOf(1) }
     val itensPorPagina = 6
@@ -183,7 +185,7 @@ fun FuncionariosScreen(
                     }
                 } else {
                     listaPagina.forEach { funcionario ->
-                        LinhaFuncionario(funcionario)
+                        LinhaFuncionario(funcionario, cargos)
                         HorizontalDivider(
                             color = Color(0xFF303030),
                             thickness = 0.5.dp
@@ -239,7 +241,13 @@ fun FuncionariosScreen(
 }
 
 @Composable
-private fun LinhaFuncionario(funcionario: Funcionario) {
+private fun LinhaFuncionario(funcionario: Funcionario, cargos: List<Cargo>) {
+    val iniciais = funcionario.nome.trim().split(Regex("\\s+"))
+        .filter { it.isNotBlank() }.take(2)
+        .joinToString("") { it.first().uppercase() }
+    val cor = colorResource(R.color.Laranja)
+    val cargo = cargos.firstOrNull { it.id == funcionario.id_cargo }?.cargo ?: "—"
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -255,19 +263,19 @@ private fun LinhaFuncionario(funcionario: Funcionario) {
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        funcionario.cor.copy(alpha = 0.25f),
+                        cor.copy(alpha = 0.25f),
                         RoundedCornerShape(5.dp)
                     )
                     .border(
                         1.dp,
-                        funcionario.cor.copy(alpha = 0.6f),
+                        cor.copy(alpha = 0.6f),
                         RoundedCornerShape(5.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    funcionario.iniciais,
-                    color = funcionario.cor,
+                    iniciais,
+                    color = cor,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -284,7 +292,7 @@ private fun LinhaFuncionario(funcionario: Funcionario) {
         }
 
         Text(
-            funcionario.cargo,
+            cargo,
             color = Color(0xFFE1C5B5),
             fontSize = 13.sp,
             lineHeight = 18.sp,

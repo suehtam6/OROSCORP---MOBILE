@@ -33,6 +33,7 @@ data class HistoricoOcorrencia(
 data class DetalhesOcorrencia(
     val id: Int,
     val tipoIA: Boolean,
+    val origemConhecida: Boolean = true,
     val status: String,
     val prioridade: String,
     val funcionario: String? = null,
@@ -159,7 +160,7 @@ fun DetalhesOcorrenciaScreen(
                         Spacer(Modifier.width(6.dp))
 
                         EtiquetaDetalhes(
-                            if (ocorrencia.tipoIA) "IA" else "MANUAL",
+                            if (!ocorrencia.origemConhecida) "NÃO INFORMADA" else if (ocorrencia.tipoIA) "IA" else "MANUAL",
                             TextoSecundario
                         )
 
@@ -171,7 +172,7 @@ fun DetalhesOcorrenciaScreen(
                         )
                     }
 
-                    if (ocorrencia.tipoIA) {
+                    if (ocorrencia.origemConhecida && ocorrencia.tipoIA) {
                         Spacer(Modifier.height(12.dp))
 
                         Text(
@@ -239,7 +240,8 @@ fun DetalhesOcorrenciaScreen(
 
                             Text(
                                 if (ocorrencia.funcionario == null)
-                                    "Detecção automática pela IA"
+                                    if (ocorrencia.origemConhecida && ocorrencia.tipoIA)
+                                        "Detecção automática pela IA" else "Funcionário não informado"
                                 else
                                     "${ocorrencia.cargo.orEmpty()} - Mat. ${ocorrencia.matricula.orEmpty()}",
                                 color = TextoSecundario,
@@ -248,7 +250,7 @@ fun DetalhesOcorrenciaScreen(
                         }
                     }
 
-                    if (ocorrencia.tipoIA &&
+                    if (ocorrencia.origemConhecida && ocorrencia.tipoIA &&
                         ocorrencia.funcionario == null
                     ) {
                         Spacer(Modifier.height(15.dp))
@@ -278,7 +280,7 @@ fun DetalhesOcorrenciaScreen(
                 Spacer(Modifier.height(10.dp))
 
                 // DETECÇÃO DA IA
-                if (ocorrencia.tipoIA) {
+                if (ocorrencia.origemConhecida && ocorrencia.tipoIA) {
                     BlocoDetalhes {
                         TituloBloco("DETECÇÃO DA IA")
 
@@ -392,7 +394,7 @@ fun DetalhesOcorrenciaScreen(
                 // EVIDÊNCIA
                 BlocoDetalhes {
                     Text(
-                        if (ocorrencia.tipoIA)
+                        if (ocorrencia.origemConhecida && ocorrencia.tipoIA)
                             "FRAME CAPTURADO PELA CÂMERA"
                         else
                             "EVIDÊNCIA",

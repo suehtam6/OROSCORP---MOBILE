@@ -20,12 +20,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 
 @Composable
 fun CameraScreen(
     nomeCamera: String,
     videoUrl: String? = null,
     online: Boolean = false,
+    statusConhecido: Boolean = true,
     onBackClick: () -> Unit,
     onAnteriorClick: () -> Unit = {},
     onProximaClick: () -> Unit = {},
@@ -100,7 +106,7 @@ fun CameraScreen(
                     ) {
                         Text(
                             if (online) "AGUARDANDO VÍDEO"
-                            else "SEM SINAL",
+                            else if (statusConhecido) "SEM SINAL" else "STATUS NÃO INFORMADO",
                             color = Color.LightGray,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
@@ -113,7 +119,7 @@ fun CameraScreen(
                             if (online)
                                 "Aguardando URL da API"
                             else
-                                "Câmera offline",
+                                if (statusConhecido) "Câmera offline" else "Status não recebido da API",
                             color = Color.Gray,
                             fontSize = 11.sp,
                             textAlign = TextAlign.Center
@@ -132,10 +138,9 @@ fun CameraScreen(
         Spacer(Modifier.height(20.dp))
 
         Text(
-            text = if (online)
-                "Câmera online"
-            else
-                "Câmera offline",
+            text = if (online) "Câmera online"
+            else if (statusConhecido) "Câmera offline"
+            else "Status não disponível",
             color = if (online)
                 laranja else Color.Gray,
             fontSize = 13.sp
@@ -185,19 +190,64 @@ private fun ControleCamera(
 
 @Composable
 private fun VideoCamera(url: String) {
-    var erro by remember(url) { mutableStateOf(false) }
+    val recurso = url.substringBefore('?').lowercase()
+    val usarMedia3 = url.startsWith("rtsp://", ignoreCase = true) ||
+        recurso.endsWith(".m3u8") || recurso.endsWith(".mp4") ||
+        recurso.endsWith(".m4v") || recurso.endsWith(".mpd")
+    if (usarMedia3) PlayerCameraMedia3(url) else PlayerCameraWeb(url)
+}
 
+/** ExoPlayer permite RTSP, HLS, MP4 e DASH, quando os módulos estão no Gradle. */
+@Composable
+private fun PlayerCameraMedia3(url: String) {
+    val context = LocalContext.current
+    var erro by remember(url) { mutableStateOf<String?>(null) }
+    val player = remember(url) {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(url))
+            playWhenReady = true
+            prepare()
+        }
+    }
+    DisposableEffect(player) {
+        val listener = object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                erro = "Falha ao reproduzir: ${error.errorCodeName}"
+            }
+        }
+        player.addListener(listener)
+        onDispose {
+            player.removeListener(listener)
+            player.release()
+        }
+    }
+    if (erro == null) {
+        AndroidView(
+            factory = { ctx -> PlayerView(ctx).apply { useController = false; this.player = player } },
+            update = { it.player = player },
+            modifier = Modifier.fillMaxSize()
+        )
+    } else {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(erro.orEmpty(), color = Color.LightGray, fontSize = 12.sp, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+/** WebView apenas para streams HTTP compatíveis (ex.: MJPEG/HTML); não suporta RTSP. */
+@Composable
+private fun PlayerCameraWeb(url: String) {
+    var erro by remember(url) { mutableStateOf(false) }
+    if (!url.startsWith("http://", true) && !url.startsWith("https://", true)) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Protocolo de vídeo não suportado", color = Color.LightGray, fontSize = 12.sp)
+        }
+        return
+    }
     if (erro) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Não foi possível carregar a transmissão",
-                color = Color.LightGray,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Não foi possível carregar a transmissão", color = Color.LightGray,
+                fontSize = 12.sp, textAlign = TextAlign.Center)
         }
     } else {
         AndroidView(
@@ -205,28 +255,18 @@ private fun VideoCamera(url: String) {
                 WebView(context).apply {
                     webViewClient = object : WebViewClient() {
                         override fun onReceivedError(
-                            view: WebView?,
-                            request: android.webkit.WebResourceRequest?,
+                            view: WebView?, request: android.webkit.WebResourceRequest?,
                             error: android.webkit.WebResourceError?
                         ) {
-                            if (request?.isForMainFrame == true) {
-                                erro = true
-                            }
+                            if (request?.isForMainFrame == true) erro = true
                         }
                     }
                     settings.javaScriptEnabled = false
                     loadUrl(url)
                 }
             },
-            update = { webView ->
-                if (webView.url != url) {
-                    webView.loadUrl(url)
-                }
-            },
-            onRelease = { webView ->
-                webView.stopLoading()
-                webView.destroy()
-            },
+            update = { webView -> if (webView.url != url) webView.loadUrl(url) },
+            onRelease = { webView -> webView.stopLoading(); webView.destroy() },
             modifier = Modifier.fillMaxSize()
         )
     }

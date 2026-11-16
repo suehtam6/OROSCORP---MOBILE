@@ -57,6 +57,8 @@ dependencies {
 
     // Runtime Saveable gerenciado pelo BOM
     implementation("androidx.compose.runtime:runtime-saveable")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     // Testes
     testImplementation(libs.junit)

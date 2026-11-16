@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.sp
 fun CamerasScreen(
     onBackClick: () -> Unit,
     cameras: List<Camera> = emptyList(),
-    statusCamera: StatusCamera,
-    statusCameras: List<StatusCamera>,
+    statusCamera: StatusCamera = StatusCamera(-1, "Indisponível"),
+    statusCameras: List<StatusCamera> = emptyList(),
     onCameraClick: (Int) -> Unit = {}
 ) {
     val laranja = colorResource(R.color.Laranja)
@@ -46,7 +46,7 @@ fun CamerasScreen(
     // Setores encontrados nas câmeras recebidas da API.
     // Nenhum setor é cadastrado manualmente nesta tela.
     val setores = cameras
-        .map { it.idSetor }
+        .map { it.id_setor }
         .distinct()
         .sortedBy { it.toString() }
 
@@ -61,21 +61,21 @@ fun CamerasScreen(
                         pesquisa.trim(),
                         ignoreCase = true
                     ) ||
-                    camera.idSetor.toString().contains(
+                    camera.id_setor.toString().contains(
                         pesquisa.trim(),
                         ignoreCase = true
                     )
 
         val correspondeSetor =
             setorSelecionado == null ||
-                    camera.idSetor == setorSelecionado
+                    camera.id_setor == setorSelecionado
 
         correspondePesquisa && correspondeSetor
     }
 
 
     val camerasOnline = cameras.indices.count { index ->
-        val status = statusCameras.getOrNull(index) ?: statusCamera
+        val status = statusCameras.firstOrNull { it.id == cameras[index].id_status_camera } ?: statusCamera
 
         status.status.equals(
             "online",
@@ -384,7 +384,7 @@ fun CamerasScreen(
                     val camera = item.value
 
                     val statusDaCamera =
-                        statusCameras.getOrNull(indexOriginal)
+                        statusCameras.firstOrNull { it.id == camera.id_status_camera }
                             ?: statusCamera
 
                     CardCamera(
@@ -435,11 +435,8 @@ private fun CardCamera(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = if (online) {
-                    "VISUALIZAR CÂMERA"
-                } else {
-                    "SEM SINAL"
-                },
+                text = if (online) "VISUALIZAR CÂMERA"
+                    else if (statusCamera.id < 0) "STATUS INDISPONÍVEL" else "SEM SINAL",
                 color = if (online) salmao else Color.Gray,
                 fontSize = 13.sp
             )
@@ -452,7 +449,7 @@ private fun CardCamera(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 EtiquetaStatusCamera(
-                    if (online) "● ONLINE" else "● OFFLINE"
+                    if (statusCamera.id < 0) "● INDISPONÍVEL" else if (online) "● ONLINE" else "● OFFLINE"
                 )
 
                 if (online) {
@@ -478,7 +475,7 @@ private fun CardCamera(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Setor ${camera.idSetor}",
+                    text = "Setor ${camera.id_setor}",
                     color = colorResource(R.color.TextoClaro),
                     fontSize = 12.sp
                 )

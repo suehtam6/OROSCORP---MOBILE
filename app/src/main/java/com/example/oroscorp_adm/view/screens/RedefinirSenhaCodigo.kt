@@ -20,7 +20,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun RedefinirSenhaCodigo(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit // Parâmetro para ação de continuar
+    onContinueClick: () -> Unit,
+    onValidarCodigo: ((String) -> Unit)? = null,
+    erro: String? = null,
+    carregando: Boolean = false // Parâmetro para ação de continuar
 ) {
     var codigo by remember { mutableStateOf("") } // Ajustado de email para codigo
 
@@ -88,7 +91,8 @@ fun RedefinirSenhaCodigo(
 
             // Botão Continue
             Button(
-                onClick = { onContinueClick() }, // Aciona a ação de continuar
+                onClick = { if (onValidarCodigo != null) onValidarCodigo(codigo) else onContinueClick() },
+                enabled = !carregando && codigo.isNotBlank(), // Aciona a ação de continuar
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
@@ -103,6 +107,10 @@ fun RedefinirSenhaCodigo(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+            if (!erro.isNullOrBlank()) {
+                Spacer(Modifier.height(16.dp))
+                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
             }
         }
     }

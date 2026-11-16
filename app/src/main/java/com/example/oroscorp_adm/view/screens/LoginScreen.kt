@@ -37,7 +37,10 @@ import com.example.oroscorp_adm.R
 @Composable
 fun LoginScreen(
     onEntrarClick: () -> Unit,
-    onEsqueceuSenhaClick: () -> Unit
+    onEsqueceuSenhaClick: () -> Unit,
+    onEntrarComCredenciais: ((String, String) -> Unit)? = null,
+    carregando: Boolean = false,
+    erro: String? = null
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -137,8 +140,20 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
+            if (!erro.isNullOrBlank()) {
+                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
+                Spacer(Modifier.height(12.dp))
+            }
+
             Button(
-                onClick = onEntrarClick,
+                onClick = {
+                    if (onEntrarComCredenciais != null) {
+                        onEntrarComCredenciais(email.trim(), password)
+                    } else {
+                        onEntrarClick()
+                    }
+                },
+                enabled = !carregando && email.isNotBlank() && password.isNotBlank(),
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),

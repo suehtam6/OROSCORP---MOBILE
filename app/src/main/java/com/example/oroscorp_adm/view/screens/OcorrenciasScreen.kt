@@ -60,8 +60,8 @@ fun OcorrenciasScreen(
                         ocorrencia.funcionario == funcionarioFiltro) &&
                 (statusFiltro == "Todos" || ocorrencia.status == statusFiltro) &&
                 (origemFiltro == "Todos" ||
-                        if (origemFiltro == "IA") ocorrencia.tipoIA
-                        else !ocorrencia.tipoIA)
+                        (ocorrencia.origemConhecida &&
+                            (if (origemFiltro == "IA") ocorrencia.tipoIA else !ocorrencia.tipoIA)))
     }
 
     val totalPaginas = maxOf(
@@ -76,10 +76,10 @@ fun OcorrenciasScreen(
         .take(itensPorPagina)
 
     val totalAbertas = ocorrencias.count {
-        !it.status.equals("Fechada", true)
+        it.status.equals("Aberta", true) || it.status.equals("Em aberto", true)
     }
 
-    val totalIA = ocorrencias.count { it.tipoIA }
+    val totalIA = ocorrencias.count { it.origemConhecida && it.tipoIA }
 
     val totalFechadas = ocorrencias.count {
         it.status.equals("Fechada", true)
@@ -205,7 +205,7 @@ fun OcorrenciasScreen(
 
                 CardEstatisticaOcorrencia(
                     "EM ABERTO",
-                    totalAbertas.toString(),
+                    if (ocorrencias.any { it.status.isBlank() }) "--" else totalAbertas.toString(),
                     Modifier.weight(1f),
                     colorResource(R.color.Salmao)
                 )
@@ -219,14 +219,14 @@ fun OcorrenciasScreen(
             ) {
                 CardEstatisticaOcorrencia(
                     "DETECTADAS POR IA",
-                    totalIA.toString(),
+                    if (ocorrencias.any { !it.origemConhecida }) "--" else totalIA.toString(),
                     Modifier.weight(1f),
                     colorResource(R.color.Salmao)
                 )
 
                 CardEstatisticaOcorrencia(
                     "FECHADAS",
-                    totalFechadas.toString(),
+                    if (ocorrencias.any { it.status.isBlank() }) "--" else totalFechadas.toString(),
                     Modifier.weight(1f)
                 )
             }
@@ -513,7 +513,7 @@ private fun LinhaOcorrencia(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                if (ocorrencia.tipoIA) "IA" else "Manual",
+                if (!ocorrencia.origemConhecida) "Não informado" else if (ocorrencia.tipoIA) "IA" else "Manual",
                 color = colorResource(R.color.Salmao),
                 fontSize = 10.sp
             )
