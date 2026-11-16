@@ -11,7 +11,7 @@ import retrofit2.http.Path
 interface SetorService {
 
     @POST("setor")
-    fun PostSetor(@Path("id")id: Int): Call<Setor>
+    fun PostSetor(@Path("")setor: Setor): Call<Setor>
 
     @GET("setor")
     fun GetSetores(): Call<List<Setor>>
@@ -22,6 +22,6 @@ interface SetorService {
     @PUT("setor/{id}")
     fun PutSetor(@Path("id")id: Int): Call<Setor>
 
-    @DELETE("id")
+    @DELETE("setor/{id}")
     fun DeleteSetor(@Path("id")id: Int): Call<Setor>
 }

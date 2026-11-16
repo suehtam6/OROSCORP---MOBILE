@@ -1,26 +1,12 @@
 
 package com.example.oroscorp_adm.components.setorScreen
-
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.oroscorp_adm.R
-import com.example.oroscorp_adm.components.Header
-import com.example.oroscorp_adm.model.Camera
-import com.example.oroscorp_adm.model.Funcionario
-import com.example.oroscorp_adm.model.Ocorrencia
 import com.example.oroscorp_adm.model.Setor
 
 @Composable
