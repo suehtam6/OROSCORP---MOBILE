@@ -1,8 +1,11 @@
 package com.example.oroscorp_adm.view.screens
+
 import com.example.oroscorp_adm.R
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,14 +25,15 @@ fun EsqueceuSenhaScreen(
     onContinueClick: () -> Unit,
     onEnviarEmail: ((String) -> Unit)? = null,
     erro: String? = null,
-    carregando: Boolean = false // Parâmetro adicionado para avançar a tela
+    carregando: Boolean = false
 ) {
     var email by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // 1. Imagem de Fundo
+
+        // IMAGEM DE FUNDO
         Image(
             painter = painterResource(id = R.drawable.fundo),
             contentDescription = "Fundo",
@@ -37,16 +41,18 @@ fun EsqueceuSenhaScreen(
             contentScale = ContentScale.Crop
         )
 
-        // 2. Conteúdo da Tela
+        // CONTEÚDO DA TELA
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Logo Oroscorp no topo
+            // LOGO OROSCORP
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo Oroscorp",
@@ -58,7 +64,7 @@ fun EsqueceuSenhaScreen(
 
             Spacer(modifier = Modifier.height(100.dp))
 
-            // Instrução
+            // INSTRUÇÃO
             Text(
                 text = "DIGITE SEU E-MAIL PARA\nPODERMOS REDEFINIR\nSUA SENHA",
                 color = Color.White,
@@ -69,16 +75,26 @@ fun EsqueceuSenhaScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Caixa de Texto (E-mail)
+            // CAMPO DE E-MAIL
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("e-mail", color = Color.Gray) },
+                onValueChange = {
+                    email = it
+                },
+                placeholder = {
+                    Text(
+                        text = "e-mail",
+                        color = Color.Gray
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
                     unfocusedContainerColor = Color(0xFFF5F3F3),
                     focusedContainerColor = Color(0xFFF5F3F3),
                     unfocusedBorderColor = Color.Transparent,
@@ -88,10 +104,16 @@ fun EsqueceuSenhaScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botão Continue
+            // BOTÃO CONTINUE
             Button(
-                onClick = { if (onEnviarEmail != null) onEnviarEmail(email) else onContinueClick() },
-                enabled = !carregando && email.isNotBlank(), // Aciona a transição para a próxima tela
+                onClick = {
+                    if (onEnviarEmail != null) {
+                        onEnviarEmail(email)
+                    } else {
+                        onContinueClick()
+                    }
+                },
+                enabled = !carregando && email.isNotBlank(),
                 modifier = Modifier
                     .width(160.dp)
                     .height(48.dp),
@@ -107,9 +129,38 @@ fun EsqueceuSenhaScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // BOTÃO VOLTAR PARA O LOGIN
+            Button(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .width(160.dp)
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFF5F3F3)
+                )
+            ) {
+                Text(
+                    text = "VOLTAR",
+                    color = Color(0xFFFF7200),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // MENSAGEM DE ERRO DA API
             if (!erro.isNullOrBlank()) {
-                Spacer(Modifier.height(16.dp))
-                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = erro,
+                    color = Color(0xFFFF9E85),
+                    fontSize = 12.sp
+                )
             }
         }
     }
