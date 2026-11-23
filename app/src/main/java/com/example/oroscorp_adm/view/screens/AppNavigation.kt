@@ -1,7 +1,8 @@
 
 package com.example.oroscorp_adm.view.screens
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,12 +12,94 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 
 import com.example.oroscorp_adm.model.*
 import com.example.oroscorp_adm.repository.OroscorpRepository
 import com.example.oroscorp_adm.service.SessionAuth
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+
+import java.time.LocalDate
+
+private val CorFundoPopup = Color(0xFF101315)
+private val CorLaranjaPopup = Color(0xFFFF9500)
+private val CorTextoPopup = Color(0xFFF5F5F5)
+private val CorTextoSecundarioPopup = Color(0xFFB0B0B0)
+
+@Composable
+private fun PopupErroOroscorp(
+    mensagem: String,
+    onFechar: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onFechar,
+
+        containerColor = CorFundoPopup,
+        shape = RoundedCornerShape(16.dp),
+
+        icon = {
+            Text(
+                text = "⚠",
+                color = CorLaranjaPopup,
+                fontSize = 34.sp
+            )
+        },
+
+        title = {
+            Text(
+                text = "Ocorreu um erro",
+                color = CorLaranjaPopup,
+                fontSize = 21.sp,
+                fontWeight = FontWeight.Bold
+            )
+        },
+
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Não foi possível concluir a operação.",
+                    color = CorTextoPopup,
+                    fontSize = 14.sp
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = mensagem,
+                    color = CorTextoSecundarioPopup,
+                    fontSize = 13.sp,
+                    lineHeight = 20.sp
+                )
+            }
+        },
+
+        confirmButton = {
+            Button(
+                onClick = onFechar,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CorLaranjaPopup,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(9.dp)
+            ) {
+                Text(
+                    text = "Entendi",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+
+        modifier = Modifier.border(
+            width = 1.dp,
+            color = CorLaranjaPopup,
+            shape = RoundedCornerShape(16.dp)
+        )
+    )
+}
 
 @Composable
 fun AppNavigation() {
@@ -24,20 +107,12 @@ fun AppNavigation() {
     val repo = remember { OroscorpRepository() }
     val scope = rememberCoroutineScope()
 
-    // NAVEGAÇÃO
-    var tela by remember {
-        mutableStateOf("login")
-    }
+    var tela by remember { mutableStateOf("login") }
+    var recarregar by remember { mutableIntStateOf(0) }
+    var carregando by remember { mutableStateOf(false) }
 
-    var recarregar by remember {
-        mutableIntStateOf(0)
-    }
+    // ERROS
 
-    var carregando by remember {
-        mutableStateOf(false)
-    }
-
-    // MENSAGENS
     var mensagemErro by remember {
         mutableStateOf<String?>(null)
     }
@@ -54,13 +129,18 @@ fun AppNavigation() {
         mutableStateOf<String?>(null)
     }
 
-    var emailRecuperacao by remember { mutableStateOf("") }
-    var tokenRedefinicao by remember { mutableStateOf("") }
-    var evidenciasOk by remember { mutableStateOf(false) }
-    var evidencias by remember { mutableStateOf<List<OcorrenciaCamera>>(emptyList()) }
-    var vinculosEpi by remember { mutableStateOf<List<OcorrenciaEpi>>(emptyList()) }
+    // RECUPERAÇÃO DE SENHA
 
-    // SELEÇÕES
+    var emailRecuperacao by remember {
+        mutableStateOf("")
+    }
+
+    var tokenRedefinicao by remember {
+        mutableStateOf("")
+    }
+
+    // SESSÃO
+
     var usuarioAtual by remember {
         mutableStateOf<Usuario?>(null)
     }
@@ -78,6 +158,7 @@ fun AppNavigation() {
     }
 
     // DADOS DA API
+
     var setores by remember {
         mutableStateOf<List<Setor>>(emptyList())
     }
@@ -118,32 +199,26 @@ fun AppNavigation() {
         mutableStateOf<List<StatusFuncionario>>(emptyList())
     }
 
-    // CONTROLE DE CARREGAMENTO
-    var setoresOk by remember {
-        mutableStateOf(false)
+    var evidencias by remember {
+        mutableStateOf<List<OcorrenciaCamera>>(emptyList())
     }
 
-    var funcionariosOk by remember {
-        mutableStateOf(false)
+    var vinculosEpi by remember {
+        mutableStateOf<List<OcorrenciaEpi>>(emptyList())
     }
 
-    var camerasOk by remember {
-        mutableStateOf(false)
-    }
+    // STATUS DAS CONSULTAS
 
-    var ocorrenciasOk by remember {
-        mutableStateOf(false)
-    }
+    var setoresOk by remember { mutableStateOf(false) }
+    var camerasOk by remember { mutableStateOf(false) }
+    var funcionariosOk by remember { mutableStateOf(false) }
+    var ocorrenciasOk by remember { mutableStateOf(false) }
+    var statusCamerasOk by remember { mutableStateOf(false) }
+    var statusOcorrenciasOk by remember { mutableStateOf(false) }
+    var evidenciasOk by remember { mutableStateOf(false) }
 
-    var statusCamerasOk by remember {
-        mutableStateOf(false)
-    }
+    // CARREGAMENTO DE DADOS
 
-    var statusOcorrenciasOk by remember {
-        mutableStateOf(false)
-    }
-
-    // CONSULTAS DA API
     LaunchedEffect(tela, recarregar) {
 
         val telasComConsulta = setOf(
@@ -163,343 +238,576 @@ fun AppNavigation() {
         }
 
         carregando = true
+        mensagemErro = null
 
         val avisos = mutableListOf<String>()
 
-        suspend fun <T> tentar(
+        suspend fun <T> consultar(
             nome: String,
             consulta: suspend () -> T,
-            aplicar: (T) -> Unit
+            sucesso: (T) -> Unit,
+            falha: () -> Unit = {}
         ) {
             try {
-                val resultado: T = consulta()
-                aplicar(resultado)
-            } catch (e: kotlinx.coroutines.CancellationException) {
+                sucesso(consulta())
+            } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                when (nome) {
-                    "Setores" -> { setoresOk = false; setores = emptyList() }
-                    "Câmeras" -> { camerasOk = false; cameras = emptyList() }
-                    "Funcionários" -> { funcionariosOk = false; funcionarios = emptyList() }
-                    "Ocorrências" -> { ocorrenciasOk = false; ocorrencias = emptyList() }
-                    "Status ocorrência" -> { statusOcorrenciasOk = false; statusOcorrencias = emptyList() }
-                    "Status câmera" -> { statusCamerasOk = false; statusCameras = emptyList() }
-                    "Evidências" -> { evidenciasOk = false; evidencias = emptyList() }
-                    "EPIs da ocorrência" -> vinculosEpi = emptyList()
-                }
+                falha()
+
                 avisos.add(
-                    "$nome: ${e.message ?: "Falha de conexão"}"
+                    "$nome: ${e.message ?: "Falha na comunicação com a API."}"
                 )
             }
         }
 
-        when (tela) {
-
-            "setores", "detalhesSetor" -> {
-                tentar("Evidências", repo::evidencias) { evidencias = it; evidenciasOk = true }
-
-                tentar("Setores", repo::setores) {
+        suspend fun carregarSetores() {
+            consultar(
+                nome = "Setores",
+                consulta = repo::setores,
+                sucesso = {
                     setores = it
                     setoresOk = true
+                },
+                falha = {
+                    setores = emptyList()
+                    setoresOk = false
                 }
-
-                tentar("Câmeras", repo::cameras) {
-                    cameras = it
-                    camerasOk = true
-                }
-
-                tentar("Funcionários", repo::funcionarios) {
-                    funcionarios = it
-                    funcionariosOk = true
-                }
-
-                tentar("Cargos", repo::cargos) {
-                    cargos = it
-                }
-
-                tentar("Ocorrências", repo::ocorrencias) {
-                    ocorrencias = it
-                    ocorrenciasOk = true
-                }
-
-                tentar(
-                    "Status ocorrência",
-                    repo::statusOcorrencias
-                ) {
-                    statusOcorrencias = it
-                    statusOcorrenciasOk = true
-                }
-
-                tentar("Status câmera", repo::statusCameras) {
-                    statusCameras = it
-                    statusCamerasOk = true
-                }
-
-                tentar(
-                    "Status funcionário",
-                    repo::statusFuncionarios
-                ) {
-                    statusFuncionarios = it
-                }
-            }
-
-            "cameras", "camera" -> {
-                tentar("Setores", repo::setores) { setores = it; setoresOk = true }
-
-                tentar("Câmeras", repo::cameras) {
-                    cameras = it
-                    camerasOk = true
-                }
-
-                tentar("Status câmera", repo::statusCameras) {
-                    statusCameras = it
-                    statusCamerasOk = true
-                }
-            }
-
-            "funcionarios" -> {
-
-                tentar("Funcionários", repo::funcionarios) {
-                    funcionarios = it
-                    funcionariosOk = true
-                }
-
-                tentar("Cargos", repo::cargos) {
-                    cargos = it
-                }
-            }
-
-            "home" -> {
-                tentar("Evidências", repo::evidencias) { evidencias = it; evidenciasOk = true }
-
-                tentar("Câmeras", repo::cameras) {
-                    cameras = it
-                    camerasOk = true
-                }
-
-                tentar("Status câmera", repo::statusCameras) {
-                    statusCameras = it
-                    statusCamerasOk = true
-                }
-
-                tentar("Ocorrências", repo::ocorrencias) {
-                    ocorrencias = it
-                    ocorrenciasOk = true
-                }
-
-                tentar(
-                    "Status ocorrência",
-                    repo::statusOcorrencias
-                ) {
-                    statusOcorrencias = it
-                    statusOcorrenciasOk = true
-                }
-            }
-
-            "ocorrencias", "detalhesOcorrencia" -> {
-                tentar("Evidências", repo::evidencias) { evidencias = it; evidenciasOk = true }
-                tentar("EPIs da ocorrência", repo::ocorrenciaEpis) { vinculosEpi = it }
-
-                tentar("Ocorrências", repo::ocorrencias) {
-                    ocorrencias = it
-                    ocorrenciasOk = true
-                }
-
-                tentar(
-                    "Status ocorrência",
-                    repo::statusOcorrencias
-                ) {
-                    statusOcorrencias = it
-                    statusOcorrenciasOk = true
-                }
-
-                tentar("Motivos", repo::motivos) {
-                    motivos = it
-                }
-
-                tentar("Setores", repo::setores) {
-                    setores = it
-                    setoresOk = true
-                }
-            }
-
-            "registrar" -> {
-
-                tentar("Funcionários", repo::funcionarios) {
-                    funcionarios = it
-                    funcionariosOk = true
-                }
-
-                tentar("Setores", repo::setores) {
-                    setores = it
-                    setoresOk = true
-                }
-
-                tentar("Câmeras", repo::cameras) {
-                    cameras = it
-                    camerasOk = true
-                }
-
-                tentar("Motivos", repo::motivos) {
-                    motivos = it
-                }
-
-                tentar("EPIs", repo::epis) {
-                    epis = it
-                }
-            }
+            )
         }
 
-        mensagemErro = avisos
-            .takeIf { it.isNotEmpty() }
-            ?.joinToString("\n")
-
-        carregando = false
-    }
-
-    // INFORMAÇÕES DOS SETORES
-    val setorInfo = setores.map { setor ->
-
-        val doSetor = ocorrencias.filter {
-            it.id_setor == setor.id
+        suspend fun carregarCameras() {
+            consultar(
+                nome = "Câmeras",
+                consulta = repo::cameras,
+                sucesso = {
+                    cameras = it
+                    camerasOk = true
+                },
+                falha = {
+                    cameras = emptyList()
+                    camerasOk = false
+                }
+            )
         }
 
-        val temStatusIndefinido = doSetor.any { ocorrencia ->
-            statusOcorrencias.none {
-                it.id == ocorrencia.id_status_ocorrencia
-            }
+        suspend fun carregarFuncionarios() {
+            consultar(
+                nome = "Funcionários",
+                consulta = repo::funcionarios,
+                sucesso = {
+                    funcionarios = it
+                    funcionariosOk = true
+                },
+                falha = {
+                    funcionarios = emptyList()
+                    funcionariosOk = false
+                }
+            )
         }
 
-        val abertos: Int? =
-            if (
-                ocorrenciasOk &&
-                statusOcorrenciasOk &&
-                !temStatusIndefinido
-            ) {
-                doSetor.count { ocorrencia ->
+        suspend fun carregarOcorrencias() {
+            consultar(
+                nome = "Ocorrências",
+                consulta = repo::ocorrencias,
+                sucesso = {
+                    ocorrencias = it
+                    ocorrenciasOk = true
+                },
+                falha = {
+                    ocorrencias = emptyList()
+                    ocorrenciasOk = false
+                }
+            )
+        }
 
-                    val nome = statusOcorrencias
-                        .firstOrNull {
-                            it.id == ocorrencia.id_status_ocorrencia
+        suspend fun carregarStatusCameras() {
+            consultar(
+                nome = "Status das câmeras",
+                consulta = repo::statusCameras,
+                sucesso = {
+                    statusCameras = it
+                    statusCamerasOk = true
+                },
+                falha = {
+                    statusCameras = emptyList()
+                    statusCamerasOk = false
+                }
+            )
+        }
+
+        suspend fun carregarStatusOcorrencias() {
+            consultar(
+                nome = "Status das ocorrências",
+                consulta = repo::statusOcorrencias,
+                sucesso = {
+                    statusOcorrencias = it
+                    statusOcorrenciasOk = true
+                },
+                falha = {
+                    statusOcorrencias = emptyList()
+                    statusOcorrenciasOk = false
+                }
+            )
+        }
+
+        suspend fun carregarEvidencias() {
+            consultar(
+                nome = "Evidências",
+                consulta = repo::evidencias,
+                sucesso = {
+                    evidencias = it
+                    evidenciasOk = true
+                },
+                falha = {
+                    evidencias = emptyList()
+                    evidenciasOk = false
+                }
+            )
+        }
+
+        try {
+            when (tela) {
+
+                "home" -> {
+                    carregarCameras()
+                    carregarStatusCameras()
+                    carregarOcorrencias()
+                    carregarStatusOcorrencias()
+                    carregarEvidencias()
+                }
+
+                "setores", "detalhesSetor" -> {
+                    carregarSetores()
+                    carregarCameras()
+                    carregarFuncionarios()
+                    carregarOcorrencias()
+                    carregarStatusCameras()
+                    carregarStatusOcorrencias()
+                    carregarEvidencias()
+
+                    consultar(
+                        nome = "Cargos",
+                        consulta = repo::cargos,
+                        sucesso = {
+                            cargos = it
+                        },
+                        falha = {
+                            cargos = emptyList()
                         }
-                        ?.status
-                        .orEmpty()
+                    )
 
-                    nome.equals("Aberta", true) ||
-                            nome.equals("Em aberto", true)
+                    consultar(
+                        nome = "Status dos funcionários",
+                        consulta = repo::statusFuncionarios,
+                        sucesso = {
+                            statusFuncionarios = it
+                        },
+                        falha = {
+                            statusFuncionarios = emptyList()
+                        }
+                    )
                 }
-            } else {
-                null
+
+                "cameras", "camera" -> {
+                    carregarSetores()
+                    carregarCameras()
+                    carregarStatusCameras()
+                }
+
+                "funcionarios" -> {
+                    carregarFuncionarios()
+
+                    consultar(
+                        nome = "Cargos",
+                        consulta = repo::cargos,
+                        sucesso = {
+                            cargos = it
+                        },
+                        falha = {
+                            cargos = emptyList()
+                        }
+                    )
+                }
+
+                "ocorrencias", "detalhesOcorrencia" -> {
+                    carregarOcorrencias()
+                    carregarStatusOcorrencias()
+                    carregarEvidencias()
+                    carregarSetores()
+
+                    consultar(
+                        nome = "Motivos",
+                        consulta = repo::motivos,
+                        sucesso = {
+                            motivos = it
+                        },
+                        falha = {
+                            motivos = emptyList()
+                        }
+                    )
+
+                    consultar(
+                        nome = "EPIs das ocorrências",
+                        consulta = repo::ocorrenciaEpis,
+                        sucesso = {
+                            vinculosEpi = it
+                        },
+                        falha = {
+                            vinculosEpi = emptyList()
+                        }
+                    )
+                }
+
+                "registrar" -> {
+                    carregarFuncionarios()
+                    carregarSetores()
+                    carregarCameras()
+
+                    consultar(
+                        nome = "Motivos",
+                        consulta = repo::motivos,
+                        sucesso = {
+                            motivos = it
+                        },
+                        falha = {
+                            motivos = emptyList()
+                        }
+                    )
+
+                    consultar(
+                        nome = "EPIs",
+                        consulta = repo::epis,
+                        sucesso = {
+                            epis = it
+                        },
+                        falha = {
+                            epis = emptyList()
+                        }
+                    )
+                }
             }
+        } finally {
+            mensagemErro = avisos
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString("\n")
 
-        SetorInfo(
-            id = setor.id,
-            nome = setor.nome,
-            descricao = setor.descricao,
-            funcionarios = if (funcionariosOk) {
-                funcionarios.count {
-                    it.id_setor == setor.id
-                }
-            } else null,
-            cameras = if (camerasOk) {
-                cameras.count {
-                    it.id_setor == setor.id
-                }
-            } else null,
-            abertas = abertos
-        )
+            carregando = false
+        }
     }
+
+    // SETORES
+
+    val setorInfo: List<SetorInfo> =
+        if (setoresOk) {
+            setores.map { setor ->
+
+                val ocorrenciasDoSetor = ocorrencias.filter {
+                    it.id_setor == setor.id
+                }
+
+                val statusConhecidos =
+                    ocorrenciasDoSetor.all { ocorrencia ->
+                        statusOcorrencias.any {
+                            it.id ==
+                                    ocorrencia.id_status_ocorrencia
+                        }
+                    }
+
+                val abertas: Int? =
+                    if (
+                        ocorrenciasOk &&
+                        statusOcorrenciasOk &&
+                        statusConhecidos
+                    ) {
+                        ocorrenciasDoSetor.count { ocorrencia ->
+                            val status = statusOcorrencias
+                                .firstOrNull {
+                                    it.id ==
+                                            ocorrencia.id_status_ocorrencia
+                                }
+                                ?.status
+                                .orEmpty()
+
+                            status.equals("Aberta", true) ||
+                                    status.equals("Em aberto", true)
+                        }
+                    } else {
+                        null
+                    }
+
+                SetorInfo(
+                    id = setor.id,
+                    nome = setor.nome,
+                    descricao = setor.descricao,
+
+                    funcionarios = if (funcionariosOk) {
+                        funcionarios.count {
+                            it.id_setor == setor.id
+                        }
+                    } else {
+                        null
+                    },
+
+                    cameras = if (camerasOk) {
+                        cameras.count {
+                            it.id_setor == setor.id
+                        }
+                    } else {
+                        null
+                    },
+
+                    abertas = abertas
+                )
+            }
+        } else {
+            emptyList()
+        }
 
     // DETALHES DAS OCORRÊNCIAS
+
     val detalhesOcorrencias = ocorrencias.map { item ->
+
+        val evidencia = evidencias.firstOrNull {
+            it.id_ocorrencia == item.id
+        }
+
+        val status = statusOcorrencias.firstOrNull {
+            it.id == item.id_status_ocorrencia
+        }
+
+        val motivo = motivos.firstOrNull {
+            it.id == item.id_motivo_ocorrencia
+        }
+
+        val setor = setores.firstOrNull {
+            it.id == item.id_setor
+        }
 
         DetalhesOcorrencia(
             id = item.id,
-            tipoIA = item.nome_origem.equals("IA", true),
-            origemConhecida = !item.nome_origem.isNullOrBlank(),
+
+            tipoIA = item.nome_origem.equals(
+                "IA",
+                ignoreCase = true
+            ),
+
+            origemConhecida =
+                !item.nome_origem.isNullOrBlank(),
+
             funcionario = item.nome_funcionario,
             descricao = item.descricao.orEmpty(),
-            epi = vinculosEpi.filter { it.id_ocorrencia == item.id }.mapNotNull { it.nome_epi }.joinToString(),
-            camera = evidencias.firstOrNull { it.id_ocorrencia == item.id }?.nome_camera.orEmpty(),
-            data = evidencias.firstOrNull { it.id_ocorrencia == item.id }?.dataHora?.take(10).orEmpty(),
-            horario = evidencias.firstOrNull { it.id_ocorrencia == item.id }?.dataHora?.drop(11)?.take(8).orEmpty(),
-            confiancaIA = evidencias.firstOrNull { it.id_ocorrencia == item.id }?.confianca_ia,
-            evidenciaUrl = evidencias.firstOrNull { it.id_ocorrencia == item.id }?.foto,
-            status = statusOcorrencias
-                .firstOrNull {
-                    it.id == item.id_status_ocorrencia
+
+            epi = vinculosEpi
+                .filter {
+                    it.id_ocorrencia == item.id
                 }
-                ?.status ?: item.nome_status_ocorrencia.orEmpty(),
+                .mapNotNull {
+                    it.nome_epi
+                }
+                .joinToString(),
+
+            camera = evidencia?.nome_camera.orEmpty(),
+
+            data = evidencia
+                ?.dataHora
+                ?.take(10)
+                .orEmpty(),
+
+            horario = evidencia
+                ?.dataHora
+                ?.drop(11)
+                ?.take(8)
+                .orEmpty(),
+
+            confiancaIA = evidencia?.confianca_ia,
+            evidenciaUrl = evidencia?.foto,
+
+            status = status?.status
+                ?: item.nome_status_ocorrencia.orEmpty(),
+
             prioridade = item.nome_prioridade ?: "—",
-            tipo = motivos
-                .firstOrNull {
-                    it.id == item.id_motivo_ocorrencia
-                }
-                ?.nome ?: item.nome_motivo_ocorrencia.orEmpty(),
-            setor = setores
-                .firstOrNull {
-                    it.id == item.id_setor
-                }
-                ?.nome ?: item.nome_setor.orEmpty()
+
+            tipo = motivo?.nome
+                ?: item.nome_motivo_ocorrencia.orEmpty(),
+
+            setor = setor?.nome
+                ?: item.nome_setor.orEmpty()
         )
     }
 
     // CÂMERAS POR SETOR
-    val cameraSetor = cameras.map { cam ->
+
+    val cameraSetor = cameras.map { camera ->
 
         val status = statusCameras.firstOrNull {
-            it.id == cam.id_status_camera
+            it.id == camera.id_status_camera
         }
 
         CameraInfo(
-            id = cam.id,
-            nome = cam.nome,
-            setorId = cam.id_setor,
-            online = status?.status.equals("online", true),
+            id = camera.id,
+            nome = camera.nome,
+            setorId = camera.id_setor,
+
+            online = status?.status.equals(
+                "online",
+                ignoreCase = true
+            ),
+
             statusConhecido = status != null
         )
     }
 
     // FUNCIONÁRIOS POR SETOR
-    val funcionarioSetor = funcionarios.map { f ->
+
+    val funcionarioSetor = funcionarios.map { funcionario ->
 
         val status = statusFuncionarios.firstOrNull {
-            it.id == f.id_status_funcionario
+            it.id == funcionario.id_status_funcionario
         }
 
         FuncionarioInfo(
-            nome = f.nome,
+            nome = funcionario.nome,
+
             cargo = cargos.firstOrNull {
-                it.id == f.id_cargo
+                it.id == funcionario.id_cargo
             }?.cargo ?: "—",
-            ativo = status?.status.equals("ativo", true),
-            setorId = f.id_setor,
+
+            ativo = status?.status.equals(
+                "ativo",
+                ignoreCase = true
+            ),
+
+            setorId = funcionario.id_setor,
             statusConhecido = status != null
         )
     }
 
     // OCORRÊNCIAS POR SETOR
-    val ocorrenciaSetor = ocorrencias.map { o ->
+
+    val ocorrenciaSetor = ocorrencias.map { ocorrencia ->
+
+        val evidencia = evidencias.firstOrNull {
+            it.id_ocorrencia == ocorrencia.id
+        }
 
         OcorrenciaInfo(
-            codigo = "#${o.id}",
-            funcionario = o.nome_funcionario ?: "—",
-            data = evidencias.firstOrNull { it.id_ocorrencia == o.id }?.dataHora?.take(10) ?: "—",
+            codigo = "#${ocorrencia.id}",
+            funcionario = ocorrencia.nome_funcionario ?: "—",
+
+            data = evidencia
+                ?.dataHora
+                ?.take(10) ?: "—",
+
             status = statusOcorrencias.firstOrNull {
-                it.id == o.id_status_ocorrencia
+                it.id == ocorrencia.id_status_ocorrencia
             }?.status ?: "—",
-            origem = o.nome_origem ?: "—",
-            setorId = o.id_setor
+
+            origem = ocorrencia.nome_origem ?: "—",
+            setorId = ocorrencia.id_setor
         )
     }
 
-    val online = cameras.count { cam ->
-        statusCameras.firstOrNull {
-            it.id == cam.id_status_camera
-        }?.status.equals("online", true)
+    // INDICADORES REAIS
+
+    val camerasOnline: Int? =
+        if (
+            camerasOk &&
+            statusCamerasOk &&
+            cameras.all { camera ->
+                statusCameras.any {
+                    it.id == camera.id_status_camera
+                }
+            }
+        ) {
+            cameras.count { camera ->
+                statusCameras.firstOrNull {
+                    it.id == camera.id_status_camera
+                }?.status.equals(
+                    "online",
+                    ignoreCase = true
+                )
+            }
+        } else {
+            null
+        }
+
+    val totalCameras: Int? =
+        if (camerasOk) cameras.size else null
+
+    val aguardandoIdentificacao: Int? =
+        if (ocorrenciasOk) {
+            ocorrencias.count {
+                it.id_funcionario == null
+            }
+        } else {
+            null
+        }
+
+    val ocorrenciasHoje: Int? =
+        if (ocorrenciasOk && evidenciasOk) {
+
+            val hoje = LocalDate.now().toString()
+
+            val todasComData = ocorrencias.all { ocorrencia ->
+                evidencias.any {
+                    it.id_ocorrencia == ocorrencia.id &&
+                            !it.dataHora.isNullOrBlank()
+                }
+            }
+
+            if (todasComData) {
+                ocorrencias.count { ocorrencia ->
+                    evidencias.any { evidencia ->
+                        evidencia.id_ocorrencia == ocorrencia.id &&
+                                evidencia.dataHora?.take(10) == hoje
+                    }
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+
+    val dadosGrafico: List<Int> = emptyList()
+
+    // POP-UP CENTRALIZADO
+    // Prioriza o erro da tela atual.
+
+    val erroAtual: String? = when (tela) {
+        "login" -> erroLogin
+
+        "esqueceu", "codigo", "trocar" -> erroSenha
+
+        "registrar" -> erroCadastro ?: mensagemErro
+
+        else -> mensagemErro
     }
 
-    // INTERFACE E NAVEGAÇÃO
+    fun fecharPopupErro() {
+        when (tela) {
+            "login" -> {
+                erroLogin = null
+            }
+
+            "esqueceu", "codigo", "trocar" -> {
+                erroSenha = null
+            }
+
+            "registrar" -> {
+                erroCadastro = null
+                mensagemErro = null
+            }
+
+            else -> {
+                mensagemErro = null
+            }
+        }
+    }
+
+    // NAVEGAÇÃO
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -510,12 +818,13 @@ fun AppNavigation() {
 
             "login" -> LoginScreen(
                 onEntrarClick = {},
+
                 onEsqueceuSenhaClick = {
                     erroSenha = null
                     tela = "esqueceu"
                 },
-                onEntrarComCredenciais = { email, senha ->
 
+                onEntrarComCredenciais = { email, senha ->
                     scope.launch {
                         erroLogin = null
                         carregando = true
@@ -523,78 +832,182 @@ fun AppNavigation() {
                         try {
                             usuarioAtual = repo.login(email, senha)
                             tela = "home"
+                        } catch (e: CancellationException) {
+                            throw e
                         } catch (e: Exception) {
-                            erroLogin = e.message ?: "Falha no login"
+                            erroLogin = e.message
+                                ?: "Não foi possível realizar o login."
                         } finally {
                             carregando = false
                         }
                     }
                 },
+
                 carregando = carregando,
-                erro = erroLogin
+                erro = null
             )
 
             "esqueceu" -> EsqueceuSenhaScreen(
-                onBackClick = { if (!carregando) { erroSenha = null; tela = "login" } },
-                onContinueClick = {}, onEnviarEmail = { email -> scope.launch {
-                    carregando = true; erroSenha = null
-                    try { repo.solicitarSenha(email); emailRecuperacao = email.trim(); tela = "codigo" }
-                    catch (e: Exception) { erroSenha = e.message } finally { carregando = false }
-                } }, erro = erroSenha, carregando = carregando
+                onBackClick = {
+                    if (!carregando) {
+                        erroSenha = null
+                        tela = "login"
+                    }
+                },
+
+                onContinueClick = {},
+
+                onEnviarEmail = { email ->
+                    scope.launch {
+                        carregando = true
+                        erroSenha = null
+
+                        try {
+                            repo.solicitarSenha(email)
+                            emailRecuperacao = email.trim()
+                            tela = "codigo"
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            erroSenha = e.message
+                                ?: "Não foi possível solicitar a recuperação de senha."
+                        } finally {
+                            carregando = false
+                        }
+                    }
+                },
+
+                erro = null,
+                carregando = carregando
             )
+
             "codigo" -> RedefinirSenhaCodigo(
-                onBackClick = { if (!carregando) { erroSenha = null; tela = "esqueceu" } },
-                onContinueClick = {}, onValidarCodigo = { codigo -> scope.launch {
-                    carregando = true; erroSenha = null
-                    try { tokenRedefinicao = repo.validarCodigo(emailRecuperacao, codigo); tela = "trocar" }
-                    catch (e: Exception) { erroSenha = e.message } finally { carregando = false }
-                } }, erro = erroSenha, carregando = carregando
+                onBackClick = {
+                    if (!carregando) {
+                        erroSenha = null
+                        tela = "esqueceu"
+                    }
+                },
+
+                onContinueClick = {},
+
+                onValidarCodigo = { codigo ->
+                    scope.launch {
+                        carregando = true
+                        erroSenha = null
+
+                        try {
+                            tokenRedefinicao = repo.validarCodigo(
+                                emailRecuperacao,
+                                codigo
+                            )
+
+                            tela = "trocar"
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            erroSenha = e.message
+                                ?: "Não foi possível validar o código."
+                        } finally {
+                            carregando = false
+                        }
+                    }
+                },
+
+                erro = null,
+                carregando = carregando
             )
+
             "trocar" -> TrocarSenhaScreen(
-                onBackClick = { if (!carregando) { tokenRedefinicao = ""; erroSenha = null; tela = "esqueceu" } },
-                onRedefinirClick = {}, onConfirmarSenha = { senha -> scope.launch {
-                    carregando = true; erroSenha = null
-                    try { repo.redefinirSenha(tokenRedefinicao, senha); tokenRedefinicao = ""; emailRecuperacao = ""; erroLogin = null; tela = "login" }
-                    catch (e: Exception) { erroSenha = e.message } finally { carregando = false }
-                } }, erro = erroSenha, carregando = carregando
+                onBackClick = {
+                    if (!carregando) {
+                        tokenRedefinicao = ""
+                        erroSenha = null
+                        tela = "esqueceu"
+                    }
+                },
+
+                onRedefinirClick = {},
+
+                onConfirmarSenha = { senha ->
+                    scope.launch {
+                        carregando = true
+                        erroSenha = null
+
+                        try {
+                            repo.redefinirSenha(
+                                tokenRedefinicao,
+                                senha
+                            )
+
+                            tokenRedefinicao = ""
+                            emailRecuperacao = ""
+                            erroLogin = null
+                            tela = "login"
+
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            erroSenha = e.message
+                                ?: "Não foi possível redefinir a senha."
+                        } finally {
+                            carregando = false
+                        }
+                    }
+                },
+
+                erro = null,
+                carregando = carregando
             )
+
+            // DASHBOARD
 
             "home" -> HomeScreen(
                 onDashboardClick = {
                     recarregar++
                 },
+
                 onSetoresClick = {
                     tela = "setores"
                 },
+
                 onCamerasClick = {
                     tela = "cameras"
                 },
+
                 onOcorrenciasClick = {
                     tela = "ocorrencias"
                 },
+
                 onFuncionariosClick = {
                     tela = "funcionarios"
                 },
+
+                onPerfilClick = {
+                    tela = "perfil"
+                },
+
                 onSairClick = {
                     tela = "login"
                     erroLogin = null
                     usuarioAtual = null
+                    mensagemErro = null
                     SessionAuth.clear()
                 },
-                onPerfilClick = {
-                    tela = "perfil"
-                },
-                ocorrenciasHoje = "--",
-                datasEvidencias = if (evidenciasOk && ocorrenciasOk) evidencias.groupBy { it.id_ocorrencia }.values.mapNotNull { grupo -> grupo.mapNotNull { it.dataHora?.take(10) }.minOrNull() } else null,
+
+                ocorrenciasHoje = ocorrenciasHoje,
+                aguardandoIdentificacao = aguardandoIdentificacao,
+                camerasOnline = camerasOnline,
+                totalCameras = totalCameras,
+
                 nomeUsuario = usuarioAtual?.nome.orEmpty(),
-                aguardandoIdentificacao = if (ocorrenciasOk) ocorrencias.count { it.id_funcionario == null }.toString() else "--",
-                camerasOnline =
-                    if (camerasOk && statusCamerasOk) {
-                        "$online/${cameras.size}"
-                    } else {
-                        "--"
-                    },
-                indiceSeguranca = "--"
+                carregando = carregando,
+                erro = null,
+                dadosGrafico = dadosGrafico,
+
+                onAtualizarClick = {
+                    recarregar++
+                }
             )
 
             "perfil" -> PerfilAdminScreen(
@@ -604,66 +1017,86 @@ fun AppNavigation() {
                 }
             )
 
+            // SETORES
+
             "setores" -> SetoresScreen(
                 onVoltar = {
                     tela = "home"
                 },
-                onAbrirSetor = {
-                    setorSelecionado = it
+
+                onAbrirSetor = { id ->
+                    setorSelecionado = id
                     tela = "detalhesSetor"
                 },
+
                 setores = setorInfo
             )
 
             "detalhesSetor" -> DetalhesSetorScreen(
                 setorId = setorSelecionado,
+
                 onVoltar = {
                     tela = "setores"
                 },
+
                 setores = setorInfo,
                 cameras = cameraSetor,
                 funcionarios = funcionarioSetor,
                 ocorrencias = ocorrenciaSetor
             )
 
+            // CÂMERAS
+
             "cameras" -> CamerasScreen(
                 onBackClick = {
                     tela = "home"
                 },
+
                 cameras = cameras,
                 statusCameras = statusCameras,
-                onCameraClick = {
-                    cameraSelecionada = it
+
+                onCameraClick = { indice ->
+                    cameraSelecionada = indice
                     tela = "camera"
                 }
             )
 
             "camera" -> {
 
-                val cam = cameras.getOrNull(cameraSelecionada)
+                val camera = cameras.getOrNull(cameraSelecionada)
 
-                val status = cam?.let { camera ->
+                val status = camera?.let { item ->
                     statusCameras.firstOrNull {
-                        it.id == camera.id_status_camera
+                        it.id == item.id_status_camera
                     }
                 }
 
                 CameraScreen(
-                    nomeCamera = cam?.nome ?: "Câmera indisponível",
-                    videoUrl = cam?.endereco_stream,
-                    online = status?.status.equals("online", true),
+                    nomeCamera = camera?.nome
+                        ?: "Câmera indisponível",
+
+                    videoUrl = camera?.endereco_stream,
+
+                    online = status?.status.equals(
+                        "online",
+                        true
+                    ),
+
                     statusConhecido = status != null,
+
                     onBackClick = {
                         tela = "cameras"
                     },
+
                     temAnterior = cameraSelecionada > 0,
-                    temProxima =
-                        cameraSelecionada + 1 < cameras.size,
+                    temProxima = cameraSelecionada + 1 < cameras.size,
+
                     onAnteriorClick = {
                         if (cameraSelecionada > 0) {
                             cameraSelecionada--
                         }
                     },
+
                     onProximaClick = {
                         if (cameraSelecionada + 1 < cameras.size) {
                             cameraSelecionada++
@@ -672,61 +1105,79 @@ fun AppNavigation() {
                 )
             }
 
+            // FUNCIONÁRIOS
+
             "funcionarios" -> FuncionariosScreen(
                 onBackClick = {
                     tela = "home"
                 },
+
                 funcionarios = funcionarios,
                 cargos = cargos
             )
+
+            // OCORRÊNCIAS
 
             "ocorrencias" -> OcorrenciasScreen(
                 onBackClick = {
                     tela = "home"
                 },
+
                 onRegistrarClick = {
                     erroCadastro = null
                     tela = "registrar"
                 },
-                onDetalhesClick = {
-                    ocorrenciaSelecionada = it
+
+                onDetalhesClick = { ocorrencia ->
+                    ocorrenciaSelecionada = ocorrencia
                     tela = "detalhesOcorrencia"
                 },
+
                 ocorrencias = detalhesOcorrencias
             )
 
             "detalhesOcorrencia" -> DetalhesOcorrenciaScreen(
-                ocorrencia = detalhesOcorrencias.firstOrNull { it.id == ocorrenciaSelecionada?.id } ?: ocorrenciaSelecionada,
+                ocorrencia = detalhesOcorrencias.firstOrNull {
+                    it.id == ocorrenciaSelecionada?.id
+                } ?: ocorrenciaSelecionada,
+
                 onBackClick = {
                     tela = "ocorrencias"
                 },
+
                 onAdicionarFuncionario = {
                     mensagemErro =
-                        "Rota de vínculo de funcionário não confirmada."
+                        "A operação de vincular funcionário ainda não possui uma rota confirmada na API."
                 },
+
                 onAlterarStatus = {
                     mensagemErro =
-                        "Rota de atualização de status não confirmada."
+                        "A operação de alterar o status ainda não possui uma rota confirmada na API."
                 },
+
                 onExportarPDF = {
                     mensagemErro =
-                        "Exportação de PDF não configurada."
+                        "A exportação de PDF ainda não está configurada."
                 }
             )
+
+            // CADASTRO DE OCORRÊNCIA
 
             "registrar" -> RegistrarOcorrenciaScreen(
                 onBackClick = {
                     tela = "ocorrencias"
                 },
+
                 funcionarios = funcionarios,
                 setores = setores,
                 cameras = cameras,
                 motivos = motivos,
                 epis = epis,
-                carregando = carregando,
-                erroApi = erroCadastro,
-                onRegistrar = { dados ->
 
+                carregando = carregando,
+                erroApi = null,
+
+                onRegistrar = { dados ->
                     scope.launch {
                         erroCadastro = null
                         carregando = true
@@ -740,16 +1191,21 @@ fun AppNavigation() {
                                 dados.idCamera,
                                 dados.idEpi,
                                 dados.prioridade,
-                                usuarioAtual?.id ?: error("Sessão inválida"),
+
+                                usuarioAtual?.id
+                                    ?: error("Sessão inválida."),
+
                                 dados.evidenciaUri
                             )
 
                             recarregar++
                             tela = "ocorrencias"
 
+                        } catch (e: CancellationException) {
+                            throw e
                         } catch (e: Exception) {
-                            erroCadastro =
-                                e.message ?: "Falha no cadastro"
+                            erroCadastro = e.message
+                                ?: "Não foi possível cadastrar a ocorrência."
                         } finally {
                             carregando = false
                         }
@@ -758,7 +1214,8 @@ fun AppNavigation() {
             )
         }
 
-        // INDICADOR DE CARREGAMENTO
+        // CARREGAMENTO
+
         if (
             carregando &&
             tela != "login" &&
@@ -768,63 +1225,20 @@ fun AppNavigation() {
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 110.dp),
-                color = Color(0xFFFF8800)
+
+                color = CorLaranjaPopup
             )
         }
 
-        // MENSAGENS DE ERRO
-        if (
-            mensagemErro != null &&
-            tela != "login"
-        ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .background(
-                        Color(0xFF1B1B1B),
-                        RoundedCornerShape(
-                            topStart = 12.dp,
-                            topEnd = 12.dp
-                        )
-                    )
-                    .border(
-                        1.dp,
-                        Color(0xFFFF8800)
-                    )
-                    .padding(12.dp)
-            ) {
+        // POP-UP DE ERROS
 
-                Text(
-                    text = mensagemErro.orEmpty(),
-                    color = Color(0xFFFFD8C0),
-                    fontSize = 12.sp,
-                    maxLines = 4
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-
-                    TextButton(
-                        onClick = {
-                            recarregar++
-                            mensagemErro = null
-                        }
-                    ) {
-                        Text("Tentar novamente")
-                    }
-
-                    TextButton(
-                        onClick = {
-                            mensagemErro = null
-                        }
-                    ) {
-                        Text("Fechar")
-                    }
+        if (!erroAtual.isNullOrBlank()) {
+            PopupErroOroscorp(
+                mensagem = erroAtual,
+                onFechar = {
+                    fecharPopupErro()
                 }
-            }
+            )
         }
     }
 }

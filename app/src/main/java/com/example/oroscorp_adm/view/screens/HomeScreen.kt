@@ -1,22 +1,36 @@
+
 package com.example.oroscorp_adm.view.screens
-import com.example.oroscorp_adm.R
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.*
-import androidx.compose.ui.zIndex
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.oroscorp_adm.R
+
+private val Fundo = Color(0xFF1C1E20)
+private val Cartao = Color(0xFF101315)
+private val CartaoSecundario = Color(0xFF191C1F)
+private val Laranja = Color(0xFFFF9500)
+private val Branco = Color(0xFFF5F5F5)
+private val Cinza = Color(0xFF9CA0A6)
+private val Verde = Color(0xFF20C982)
+private val Borda = Color(0xFF292D31)
 
 @Composable
 fun HomeScreen(
@@ -25,14 +39,17 @@ fun HomeScreen(
     onCamerasClick: () -> Unit = {},
     onOcorrenciasClick: () -> Unit = {},
     onFuncionariosClick: () -> Unit = {},
-    onSairClick: () -> Unit = {},
     onPerfilClick: () -> Unit = {},
-    ocorrenciasHoje: String = "--",
-    aguardandoIdentificacao: String = "--",
-    camerasOnline: String = "--",
-    indiceSeguranca: String = "--",
-    datasEvidencias: List<String>? = null,
-    nomeUsuario: String = ""
+    onSairClick: () -> Unit = {},
+    ocorrenciasHoje: Int? = null,
+    aguardandoIdentificacao: Int? = null,
+    camerasOnline: Int? = null,
+    totalCameras: Int? = null,
+    nomeUsuario: String = "Administrador",
+    carregando: Boolean = false,
+    erro: String? = null,
+    onAtualizarClick: () -> Unit = {},
+    dadosGrafico: List<Int> = emptyList()
 ) {
     var menuAberto by remember { mutableStateOf(false) }
     var periodo by remember { mutableStateOf("Semana") }
@@ -40,438 +57,717 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.Fundo))
+            .background(Fundo)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-
-            // LOGO NO CABEÇALHO
-            Box(
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // CABEÇALHO
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(95.dp)
-                    .background(Color.Black),
-                contentAlignment = Alignment.CenterStart
+                    .height(64.dp)
+                    .background(Color(0xFF080A0B))
+                    .padding(horizontal = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Image(
-                    painter = painterResource(R.drawable.logo),
-                    contentDescription = "Logo OROSCORP",
-                    modifier = Modifier
-                        .fillMaxWidth(0.75f)
-                        .height(80.dp)
-                        .padding(start = 12.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 22.dp)
-            ) {
-                Spacer(Modifier.height(8.dp))
-
-                // BOTÃO HAMBÚRGUER
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
-                        .border(2.dp, colorResource(R.color.Laranja), CircleShape)
-                        .clickable { menuAberto = true },
+                        .size(38.dp)
+                        .border(1.dp, Laranja, CircleShape)
+                        .clickable { menuAberto = !menuAberto },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("☰", color = colorResource(R.color.Laranja), fontSize = 28.sp)
+                    Text(
+                        "☰",
+                        color = Laranja,
+                        fontSize = 21.sp
+                    )
                 }
 
-                Spacer(Modifier.height(22.dp))
-
-                // INDICADORES DO DASHBOARD
-                Indicador(
-                    titulo = "Ocorrências hoje",
-                    valor = ocorrenciasHoje,
-                    simbolo = "⚠",
-                    variacao = null
-                )
-
-                Spacer(Modifier.height(22.dp))
-
-                Indicador(
-                    titulo = "Aguardando identificação",
-                    valor = aguardandoIdentificacao,
-                    simbolo = "◎"
-                )
-
-                Spacer(Modifier.height(22.dp))
-
-                Indicador(
-                    titulo = "Câmeras online",
-                    valor = camerasOnline,
-                    simbolo = "▣"
-                )
-
-                Spacer(Modifier.height(22.dp))
-
-                Indicador(
-                    titulo = "Índice de segurança geral",
-                    valor = indiceSeguranca,
-                    simbolo = "♜"
-                )
-
-                Spacer(Modifier.height(24.dp))
-
-                // GRÁFICO
-                Column(
+                Image(
+                    painter = painterResource(R.drawable.logo),
+                    contentDescription = "OROSCORP",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(440.dp)
-                        .background(colorResource(R.color.Cartao), RoundedCornerShape(12.dp))
-                        .padding(18.dp)
+                        .width(165.dp)
+                        .height(46.dp),
+                    contentScale = ContentScale.Fit
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clickable { onAtualizarClick() },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .background(
-                                Color(0xFF353535),
-                                RoundedCornerShape(8.dp)
-                            )
-                            .padding(4.dp)
-                    ) {
-                        listOf("Hoje", "Semana", "Mês").forEach { item ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(
-                                        if (periodo == item)
-                                            Color(0xFF484848)
-                                        else Color.Transparent
-                                    )
-                                    .clickable { periodo = item }
-                                    .padding(
-                                        horizontal = 12.dp,
-                                        vertical = 8.dp
-                                    )
-                            ) {
-                                Text(
-                                    text = item,
-                                    color = colorResource(R.color.TextoClaro),
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
                     Text(
-                        text = "Ocorrências ao longo do tempo",
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
+                        "↻",
+                        color = Laranja,
+                        fontSize = 26.sp
+                    )
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 18.dp,
+                    end = 18.dp,
+                    top = 24.dp,
+                    bottom = 28.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    Text(
+                        "Dashboard",
+                        color = Branco,
+                        fontSize = 27.sp,
+                        fontWeight = FontWeight.Bold
                     )
 
                     Spacer(Modifier.height(6.dp))
 
                     Text(
-                        text = "Detecções de IA e registros manuais",
-                        color = colorResource(R.color.TextoClaro),
-                        fontSize = 12.sp
+                        "Visão geral do monitoramento de segurança e conformidade com EPIs.",
+                        color = Cinza,
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp
+                    )
+
+                    Spacer(Modifier.height(15.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    Verde.copy(alpha = 0.13f),
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    Verde.copy(alpha = 0.4f),
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .padding(
+                                    horizontal = 12.dp,
+                                    vertical = 7.dp
+                                )
+                        ) {
+                            Text(
+                                "● Sistema de monitoramento",
+                                color = Verde,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+                }
+
+                if (carregando) {
+                    item {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Laranja,
+                            trackColor = Cartao
+                        )
+                    }
+                }
+
+                if (!erro.isNullOrBlank()) {
+                    item {
+                        Text(
+                            text = erro,
+                            color = Color(0xFFFF8C80),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                // INDICADORES
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        IndicadorDashboard(
+                            titulo = "Ocorrências hoje",
+                            valor = ocorrenciasHoje?.toString() ?: "—",
+                            icone = "⚠",
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        IndicadorDashboard(
+                            titulo = "Aguardando identificação",
+                            valor = aguardandoIdentificacao
+                                ?.toString() ?: "—",
+                            icone = "◎",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        IndicadorDashboard(
+                            titulo = "Câmeras online",
+                            valor = if (
+                                camerasOnline != null &&
+                                totalCameras != null
+                            ) {
+                                "$camerasOnline/$totalCameras"
+                            } else {
+                                "—"
+                            },
+                            icone = "▣",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                // GRÁFICO
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Cartao,
+                                RoundedCornerShape(14.dp)
+                            )
+                            .border(
+                                1.dp,
+                                Borda,
+                                RoundedCornerShape(14.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            "Ocorrências ao longo do tempo",
+                            color = Branco,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Spacer(Modifier.height(5.dp))
+
+                        Text(
+                            "Detecções de IA e registros manuais",
+                            color = Cinza,
+                            fontSize = 11.sp
+                        )
+
+                        Spacer(Modifier.height(14.dp))
+
+                        Row(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf(
+                                "Hoje",
+                                "Semana",
+                                "Mês"
+                            ).forEach { opcao ->
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            if (periodo == opcao)
+                                                Laranja.copy(
+                                                    alpha = 0.15f
+                                                )
+                                            else
+                                                CartaoSecundario,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .border(
+                                            1.dp,
+                                            if (periodo == opcao)
+                                                Laranja
+                                            else
+                                                Borda,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable {
+                                            periodo = opcao
+                                        }
+                                        .padding(
+                                            horizontal = 13.dp,
+                                            vertical = 8.dp
+                                        )
+                                ) {
+                                    Text(
+                                        opcao,
+                                        color = if (
+                                            periodo == opcao
+                                        ) {
+                                            Laranja
+                                        } else {
+                                            Cinza
+                                        },
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(22.dp))
+
+                        GraficoOcorrencias(
+                            valores = dadosGrafico,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(170.dp)
+                        )
+
+                        Spacer(Modifier.height(10.dp))
+
+                        Text(
+                            if (dadosGrafico.isEmpty())
+                                "Sem dados disponíveis para o gráfico."
+                            else
+                                "Dados de ocorrências recebidos do sistema.",
+                            color = Cinza,
+                            fontSize = 10.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                // ALERTAS
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Cartao,
+                                RoundedCornerShape(14.dp)
+                            )
+                            .border(
+                                1.dp,
+                                Borda,
+                                RoundedCornerShape(14.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            "Alertas recentes",
+                            color = Branco,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        Spacer(Modifier.height(5.dp))
+
+                        Text(
+                            "Ocorrências pendentes de tratativa",
+                            color = Cinza,
+                            fontSize = 11.sp
+                        )
+
+                        Spacer(Modifier.height(25.dp))
+
+                        Text(
+                            "Consulte as ocorrências para visualizar os alertas registrados.",
+                            color = Cinza,
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(22.dp))
+
+                        Button(
+                            onClick = onOcorrenciasClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Laranja
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(
+                                "Gerenciar ocorrências",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                // ACESSOS
+                item {
+                    Text(
+                        "Acesso rápido",
+                        color = Branco,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                item {
+                    Row(
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp)
+                    ) {
+                        AtalhoDashboard(
+                            titulo = "Setores",
+                            icone = "▦",
+                            modifier = Modifier.weight(1f),
+                            onClick = onSetoresClick
+                        )
+
+                        AtalhoDashboard(
+                            titulo = "Câmeras",
+                            icone = "▣",
+                            modifier = Modifier.weight(1f),
+                            onClick = onCamerasClick
+                        )
+                    }
+                }
+
+                item {
+                    Row(
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp)
+                    ) {
+                        AtalhoDashboard(
+                            titulo = "Ocorrências",
+                            icone = "⚠",
+                            modifier = Modifier.weight(1f),
+                            onClick = onOcorrenciasClick
+                        )
+
+                        AtalhoDashboard(
+                            titulo = "Funcionários",
+                            icone = "♙",
+                            modifier = Modifier.weight(1f),
+                            onClick = onFuncionariosClick
+                        )
+                    }
+                }
+            }
+        }
+
+        // MENU LATERAL
+        if (menuAberto) {
+            Row(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(275.dp)
+                        .background(Color(0xFF141617))
+                        .border(1.dp, Borda)
+                        .verticalScroll(rememberScrollState())
+                        .padding(18.dp)
+                ) {
+                    Spacer(Modifier.height(20.dp))
+
+                    Image(
+                        painter = painterResource(R.drawable.logo),
+                        contentDescription = "OROSCORP",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        contentScale = ContentScale.Fit
+                    )
+
+                    Spacer(Modifier.height(30.dp))
+
+                    Text(
+                        "CENTRAL",
+                        color = Laranja,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
                     )
 
                     Spacer(Modifier.height(25.dp))
 
-                    // Série baseada nas datas das evidências retornadas pela API
-                    GraficoOcorrencias(
-                        datas = datasEvidencias, periodo = periodo,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
+                    ItemMenu("Dashboard", "▤") {
+                        menuAberto = false
+                        onDashboardClick()
+                    }
+
+                    ItemMenu("Setores", "▦") {
+                        menuAberto = false
+                        onSetoresClick()
+                    }
+
+                    ItemMenu("Câmeras", "▣") {
+                        menuAberto = false
+                        onCamerasClick()
+                    }
+
+                    ItemMenu("Ocorrências", "⚠") {
+                        menuAberto = false
+                        onOcorrenciasClick()
+                    }
+
+                    ItemMenu("Funcionários", "♙") {
+                        menuAberto = false
+                        onFuncionariosClick()
+                    }
+
+                    Spacer(Modifier.height(25.dp))
+
+                    HorizontalDivider(color = Borda)
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Text(
+                        nomeUsuario,
+                        color = Branco,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
                     )
-                }
 
-                Spacer(Modifier.height(30.dp))
-            }
-        }
+                    Text(
+                        "ADMINISTRADOR",
+                        color = Cinza,
+                        fontSize = 11.sp
+                    )
 
-        // MENU SOBREPOSTO AO DASHBOARD
-        if (menuAberto) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(2f)
-                    .background(Color.Black.copy(alpha = 0.35f))
-                    .clickable { menuAberto = false }
-            )
+                    Spacer(Modifier.height(15.dp))
 
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.78f)
-                    .padding(top = 95.dp, bottom = 12.dp)
-                    .zIndex(3f)
-                    .background(colorResource(R.color.Cartao))
-                    .border(2.dp,colorResource(R.color.Laranja))
-                    .verticalScroll(rememberScrollState())
-                    .clickable(enabled = false) {}
-                    .padding(14.dp)
-            ) {
-                Spacer(Modifier.height(30.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(colorResource(R.color.Laranja), RoundedCornerShape(5.dp)),
-                        contentAlignment = Alignment.Center
+                    OutlinedButton(
+                        onClick = {
+                            menuAberto = false
+                            onPerfilClick()
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        border = BorderStroke(1.dp, Laranja)
                     ) {
                         Text(
-                            "O",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 23.sp
+                            "Meu perfil",
+                            color = Laranja
                         )
                     }
 
-                    Spacer(Modifier.width(12.dp))
-
-                    Text(
-                        "CENTRAL",
-                        color = colorResource(R.color.Salmao),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
-
-                Spacer(Modifier.height(32.dp))
-
-                ItemMenu("▦", "DASHBOARD", true) {
-                    menuAberto = false
-                    onDashboardClick()
-                }
-
-                ItemMenu("▦", "SETORES") {
-                    menuAberto = false
-                    onSetoresClick()
-                }
-
-                ItemMenu("▣", "CÂMERAS") {
-                    menuAberto = false
-                    onCamerasClick()
-                }
-
-                ItemMenu("⚠", "OCORRÊNCIAS") {
-                    menuAberto = false
-                    onOcorrenciasClick()
-                }
-
-                ItemMenu("▤", "FUNCIONÁRIOS") {
-                    menuAberto = false
-                    onFuncionariosClick()
-                }
-
-                Spacer(Modifier.height(20.dp))
-
-                // PERFIL ADMINISTRADOR
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            1.dp,
-                            Color.DarkGray,
-                            RoundedCornerShape(8.dp)
-                        )
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        "${nomeUsuario.ifBlank { "ADMINISTRADOR" }} · ver perfil",
-                        modifier = Modifier.clickable { menuAberto = false; onPerfilClick() },
-                        color = colorResource(R.color.TextoClaro),
-                        fontSize = 12.sp
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-
-                    Button(
+                    OutlinedButton(
                         onClick = {
                             menuAberto = false
                             onSairClick()
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF592323)
-                        ),
-                        shape = RoundedCornerShape(15.dp),
-                        contentPadding = PaddingValues(
-                            horizontal = 12.dp,
-                            vertical = 4.dp
+                        modifier = Modifier.fillMaxWidth(),
+                        border = BorderStroke(
+                            1.dp,
+                            Color(0xFF8E3838)
                         )
                     ) {
                         Text(
-                            "sair da conta",
-                            color = Color.White,
-                            fontSize = 11.sp
+                            "Sair da conta",
+                            color = Color(0xFFFF7777)
                         )
                     }
                 }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Color.Black.copy(alpha = 0.6f)
+                        )
+                        .clickable {
+                            menuAberto = false
+                        }
+                )
             }
         }
     }
 }
 
-// CARTÃO DE INDICADOR
 @Composable
-private fun Indicador(
+private fun IndicadorDashboard(
     titulo: String,
     valor: String,
-    simbolo: String,
-    variacao: String? = null
+    icone: String,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(155.dp)
-            .background(colorResource(R.color.Cartao), RoundedCornerShape(12.dp))
-            .padding(16.dp),
+        modifier = modifier
+            .height(145.dp)
+            .background(
+                Cartao,
+                RoundedCornerShape(14.dp)
+            )
+            .border(
+                1.dp,
+                Borda,
+                RoundedCornerShape(14.dp)
+            )
+            .padding(15.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        colorResource(R.color.Cartao),
-                        RoundedCornerShape(8.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    simbolo,
-                    color = colorResource(R.color.Salmao),
-                    fontSize = 24.sp
-                )
-            }
-
-            if (variacao != null) {
-                Text(
-                    text = variacao,
-                    color = colorResource(R.color.Salmao),
-                    fontSize = 12.sp
-                )
-            }
-        }
-
-        Column {
-            Text(
-                text = valor,
-                color = Color(0xFFE1E1E1),
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = titulo,
-                color = colorResource(R.color.TextoClaro),
-                fontSize = 13.sp
-            )
-        }
-    }
-}
-
-// ITEM DO MENU
-@Composable
-private fun ItemMenu(
-    simbolo: String,
-    titulo: String,
-    selecionado: Boolean = false,
-    onClick: () -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(62.dp)
-                .clickable { onClick() },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = simbolo,
-                color = if (selecionado) colorResource(R.color.Laranja) else colorResource(R.color.TextoClaro),
-                fontSize = 21.sp
-            )
-
-            Spacer(Modifier.width(18.dp))
-
-            Text(
-                text = titulo,
-                color = if (selecionado) colorResource(R.color.Laranja) else colorResource(R.color.TextoClaro),
-                fontSize = 13.sp,
-                fontWeight = if (selecionado)
-                    FontWeight.Bold else FontWeight.Normal
-            )
-        }
-
-        HorizontalDivider(
-            color = Color(0xFF777777),
-            thickness = 1.dp
-        )
-    }
-}
-
-// ÁREA DO GRÁFICO
-@Composable
-private fun GraficoOcorrencias(
-    modifier: Modifier = Modifier, datas: List<String>? = null, periodo: String = "Semana"
-) {
-    val hoje = java.time.LocalDate.now()
-    val dias = when (periodo) { "Hoje" -> 1; "Mês" -> 30; else -> 7 }
-    val valores = (dias - 1 downTo 0).map { d -> datas.orEmpty().count { it == hoje.minusDays(d.toLong()).toString() } }
-    Column(modifier = modifier) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+                .size(32.dp)
+                .background(
+                    Laranja.copy(alpha = 0.12f),
+                    RoundedCornerShape(8.dp)
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val linhas = 4
-
-                for (i in 0..linhas) {
-                    val y = size.height * i / linhas
-
-                    drawLine(
-                        color = Color(0xFF343434),
-                        start = Offset(0f, y),
-                        end = Offset(size.width, y),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                }
-                if (!datas.isNullOrEmpty()) {
-                    val max = valores.maxOrNull()?.coerceAtLeast(1) ?: 1
-                    val largura = size.width / valores.size
-                    valores.forEachIndexed { i, v ->
-                        val x = largura * (i + 0.5f)
-                        drawLine(Color(0xFFFFB582), Offset(x, size.height), Offset(x, size.height * (1f - v.toFloat() / max)), strokeWidth = largura * 0.55f)
-                    }
-                }
-            }
-
-            if (datas.isNullOrEmpty()) Text(
-                text = "Sem datas de evidências disponíveis",
-                color = Color.Gray,
-                fontSize = 12.sp,
-                modifier = Modifier.align(Alignment.Center)
+            Text(
+                icone,
+                color = Laranja,
+                fontSize = 19.sp
             )
         }
 
-        Spacer(Modifier.height(10.dp))
+        Text(
+            valor,
+            color = Branco,
+            fontSize = 27.sp,
+            fontWeight = FontWeight.Bold
+        )
 
         Text(
-            text = "Ocorrências com evidência datada (primeira evidência)",
-            color = Color.Gray,
-            fontSize = 10.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
+            titulo,
+            color = Cinza,
+            fontSize = 11.sp,
+            lineHeight = 14.sp
         )
+    }
+}
+
+@Composable
+private fun AtalhoDashboard(
+    titulo: String,
+    icone: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .height(105.dp)
+            .background(
+                Cartao,
+                RoundedCornerShape(12.dp)
+            )
+            .border(
+                1.dp,
+                Borda,
+                RoundedCornerShape(12.dp)
+            )
+            .clickable {
+                onClick()
+            }
+            .padding(14.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            icone,
+            color = Laranja,
+            fontSize = 24.sp
+        )
+
+        Text(
+            titulo,
+            color = Branco,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun ItemMenu(
+    titulo: String,
+    icone: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            }
+            .padding(vertical = 15.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            icone,
+            color = Laranja,
+            fontSize = 20.sp
+        )
+
+        Spacer(Modifier.width(16.dp))
+
+        Text(
+            titulo,
+            color = Branco,
+            fontSize = 14.sp
+        )
+    }
+
+    HorizontalDivider(color = Borda)
+}
+
+@Composable
+private fun GraficoOcorrencias(
+    valores: List<Int>,
+    modifier: Modifier = Modifier
+) {
+    val valoresValidos = valores.map {
+        it.coerceAtLeast(0)
+    }
+
+    Canvas(modifier = modifier) {
+        val largura = size.width
+        val altura = size.height
+
+        val maximo = (
+                valoresValidos.maxOrNull() ?: 0
+                )
+            .coerceAtLeast(1)
+            .toFloat()
+
+        for (i in 0..4) {
+            val y = altura * i / 4f
+
+            drawLine(
+                color = Borda,
+                start = androidx.compose.ui.geometry.Offset(
+                    0f,
+                    y
+                ),
+                end = androidx.compose.ui.geometry.Offset(
+                    largura,
+                    y
+                ),
+                strokeWidth = 1.dp.toPx()
+            )
+        }
+
+        if (valoresValidos.size >= 2) {
+            val caminho = Path()
+
+            valoresValidos.forEachIndexed { index, valor ->
+                val x = largura * index /
+                        (valoresValidos.size - 1).toFloat()
+
+                val y = altura -
+                        (valor / maximo) * altura
+
+                if (index == 0) {
+                    caminho.moveTo(x, y)
+                } else {
+                    caminho.lineTo(x, y)
+                }
+            }
+
+            drawPath(
+                path = caminho,
+                color = Laranja,
+                style = Stroke(
+                    width = 3.dp.toPx()
+                )
+            )
+        }
     }
 }
