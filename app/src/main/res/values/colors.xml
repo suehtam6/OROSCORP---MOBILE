@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="Laranja">#FFFF8A00</color>
+    <color name="Salmao">#FFFFB58C</color>
+    <color name="Fundo">#FF353535</color>
+    <color name="Cartao">#FF1E2020</color>
+    <color name="Borda">#FF59402F</color>
+    <color name="TextoClaro">#FFE6D0C2</color>
+
+</resources>
