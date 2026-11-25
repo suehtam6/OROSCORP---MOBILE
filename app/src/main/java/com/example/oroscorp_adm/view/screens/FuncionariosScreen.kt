@@ -1,5 +1,6 @@
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import com.example.oroscorp_adm.R
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -42,7 +43,7 @@ fun FuncionariosScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.Fundo))
+            .background(TemaGlobal.cor(colorResource(R.color.Fundo), Color(0xFFF2F3F5)))
     ) {
         // CABEÇALHO
         Row(
@@ -59,7 +60,7 @@ fun FuncionariosScreen(
                 contentDescription = "Logo OROSCORP",
                 modifier = Modifier
                     .weight(1f)
-                    .height(75.dp),
+                    .height(75.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit,
                 alignment = Alignment.CenterStart
             )
@@ -71,13 +72,13 @@ fun FuncionariosScreen(
                     .size(55.dp)
                     .border(
                         2.5.dp,
-                        colorResource(R.color.Laranja),
+                        TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00)),
                         RoundedCornerShape(18.dp)
                     )
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Text("←", color = colorResource(R.color.Laranja), fontSize = 34.sp)
+                Text("←", color = TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00)), fontSize = 34.sp)
             }
         }
 
@@ -94,14 +95,14 @@ fun FuncionariosScreen(
                     modifier = Modifier
                         .width(7.dp)
                         .height(30.dp)
-                        .background(colorResource(R.color.Salmao), RoundedCornerShape(3.dp))
+                        .background(TemaGlobal.cor(colorResource(R.color.Salmao), Color(0xFFAD501B)), RoundedCornerShape(3.dp))
                 )
 
                 Spacer(Modifier.width(12.dp))
 
                 Text(
                     text = "FUNCIONÁRIOS",
-                    color = Color(0xFFE6E6E6),
+                    color = TemaGlobal.cor(Color(0xFFE6E6E6), Color(0xFF191C1F)),
                     fontSize = 27.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -111,7 +112,7 @@ fun FuncionariosScreen(
 
             Text(
                 text = "Lista de funcionários, conformidade de EPI e histórico de ocorrências.",
-                color = Color(0xFFE1C5B5),
+                color = TemaGlobal.cor(Color(0xFFE1C5B5), Color(0xFF65574F)),
                 fontSize = 15.sp,
                 lineHeight = 23.sp,
                 textAlign = TextAlign.Center,
@@ -123,9 +124,9 @@ fun FuncionariosScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, colorResource(R.color.Borda), RoundedCornerShape(9.dp))
+                    .border(1.dp, TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF)), RoundedCornerShape(9.dp))
                     .clip(RoundedCornerShape(9.dp))
-                    .background(colorResource(R.color.Cartao))
+                    .background(TemaGlobal.cor(colorResource(R.color.Cartao), Color(0xFFFFFFFF)))
             ) {
                 Box(
                     modifier = Modifier
@@ -136,24 +137,24 @@ fun FuncionariosScreen(
                 ) {
                     Text(
                         "${funcionarios.size} FUNCIONÁRIOS ENCONTRADOS",
-                        color = Color(0xFFE1C5B5),
+                        color = TemaGlobal.cor(Color(0xFFE1C5B5), Color(0xFF65574F)),
                         fontSize = 12.sp
                     )
                 }
 
-                HorizontalDivider(color = colorResource(R.color.Borda))
+                HorizontalDivider(color = TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF)))
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(38.dp)
-                        .background(Color(0xFF1B1B1B))
+                        .background(TemaGlobal.cor(Color(0xFF1B1B1B), Color(0xFFE9EBEE)))
                         .padding(horizontal = 18.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         "FUNCIONÁRIO",
-                        color = Color(0xFFE1C5B5),
+                        color = TemaGlobal.cor(Color(0xFFE1C5B5), Color(0xFF65574F)),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -162,7 +163,7 @@ fun FuncionariosScreen(
 
                     Text(
                         "CARGO",
-                        color = Color(0xFFE1C5B5),
+                        color = TemaGlobal.cor(Color(0xFFE1C5B5), Color(0xFF65574F)),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -179,7 +180,7 @@ fun FuncionariosScreen(
                     ) {
                         Text(
                             "Nenhum funcionário encontrado",
-                            color = Color.Gray,
+                            color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                             fontSize = 13.sp
                         )
                     }
@@ -187,13 +188,13 @@ fun FuncionariosScreen(
                     listaPagina.forEach { funcionario ->
                         LinhaFuncionario(funcionario, cargos)
                         HorizontalDivider(
-                            color = Color(0xFF303030),
+                            color = TemaGlobal.cor(Color(0xFF303030), Color(0xFFE9EBEE)),
                             thickness = 0.5.dp
                         )
                     }
                 }
 
-                HorizontalDivider(color = colorResource(R.color.Borda))
+                HorizontalDivider(color = TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF)))
 
                 Row(
                     modifier = Modifier
@@ -213,7 +214,7 @@ fun FuncionariosScreen(
                                     .size(29.dp)
                                     .clip(RoundedCornerShape(4.dp))
                                     .background(
-                                        if (numero == pagina) colorResource(R.color.Salmao)
+                                        if (numero == pagina) TemaGlobal.cor(colorResource(R.color.Salmao), Color(0xFFAD501B))
                                         else Color.Transparent
                                     )
                                     .clickable { paginaAtual = numero },
@@ -222,7 +223,7 @@ fun FuncionariosScreen(
                                 Text(
                                     "$numero",
                                     color = if (numero == pagina)
-                                        Color.Black else colorResource(R.color.Salmao),
+                                        Color.Black else TemaGlobal.cor(colorResource(R.color.Salmao), Color(0xFFAD501B)),
                                     fontSize = 12.sp
                                 )
                             }
@@ -245,7 +246,7 @@ private fun LinhaFuncionario(funcionario: Funcionario, cargos: List<Cargo>) {
     val iniciais = funcionario.nome.trim().split(Regex("\\s+"))
         .filter { it.isNotBlank() }.take(2)
         .joinToString("") { it.first().uppercase() }
-    val cor = colorResource(R.color.Laranja)
+    val cor = TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00))
     val cargo = cargos.firstOrNull { it.id == funcionario.id_cargo }?.cargo ?: "—"
 
     Row(
@@ -285,7 +286,7 @@ private fun LinhaFuncionario(funcionario: Funcionario, cargos: List<Cargo>) {
 
             Text(
                 funcionario.nome,
-                color = Color(0xFFE1E1E1),
+                color = TemaGlobal.cor(Color(0xFFE1E1E1), Color(0xFF191C1F)),
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
@@ -293,7 +294,7 @@ private fun LinhaFuncionario(funcionario: Funcionario, cargos: List<Cargo>) {
 
         Text(
             cargo,
-            color = Color(0xFFE1C5B5),
+            color = TemaGlobal.cor(Color(0xFFE1C5B5), Color(0xFF65574F)),
             fontSize = 13.sp,
             lineHeight = 18.sp,
             modifier = Modifier.weight(1f)
@@ -313,10 +314,10 @@ private fun BotaoPagina(
         contentPadding = PaddingValues(horizontal = 8.dp),
         modifier = Modifier.height(32.dp),
         shape = RoundedCornerShape(5.dp),
-        border = BorderStroke(1.dp, colorResource(R.color.Borda)),
+        border = BorderStroke(1.dp, TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF))),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = colorResource(R.color.Salmao),
-            disabledContentColor = Color.Gray
+            contentColor = TemaGlobal.cor(colorResource(R.color.Salmao), Color(0xFFAD501B)),
+            disabledContentColor = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))
         )
     ) {
         Text(texto, fontSize = 11.sp)

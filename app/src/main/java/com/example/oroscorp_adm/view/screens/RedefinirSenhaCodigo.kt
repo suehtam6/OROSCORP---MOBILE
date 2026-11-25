@@ -1,5 +1,7 @@
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
+import androidx.compose.foundation.background
 import com.example.oroscorp_adm.R
 
 import androidx.compose.foundation.Image
@@ -31,12 +33,16 @@ fun RedefinirSenhaCodigo(
         modifier = Modifier.fillMaxSize()
     ) {
         // 1. Imagem de Fundo
+        if (!TemaGlobal.modoClaro) {
         Image(
             painter = painterResource(id = R.drawable.fundo),
             contentDescription = "Fundo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        } else {
+            Box(Modifier.fillMaxSize().background(TemaGlobal.fundo))
+        }
 
         // 2. Conteúdo da Tela
         Column(
@@ -53,7 +59,7 @@ fun RedefinirSenhaCodigo(
                 contentDescription = "Logo Oroscorp",
                 modifier = Modifier
                     .width(180.dp)
-                    .height(50.dp),
+                    .height(50.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit
             )
 
@@ -62,7 +68,7 @@ fun RedefinirSenhaCodigo(
             // Instrução
             Text(
                 text = "DIGITE O CÓDIGO PARA REDEFINIÇÃO DA SENHA",
-                color = Color.White,
+                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -74,16 +80,18 @@ fun RedefinirSenhaCodigo(
             OutlinedTextField(
                 value = codigo,
                 onValueChange = { codigo = it },
-                placeholder = { Text("CÓDIGO", color = Color.Gray) },
+                placeholder = { Text("CÓDIGO", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedTextColor = Color.Black,
+                    focusedTextColor = Color.Black,
                     unfocusedContainerColor = Color(0xFFF5F3F3),
                     focusedContainerColor = Color(0xFFF5F3F3),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.borda),
+                    focusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.laranja)
                 )
             )
 
@@ -103,15 +111,15 @@ fun RedefinirSenhaCodigo(
             ) {
                 Text(
                     text = "CONTINUE",
-                    color = Color(0xFFFF7200),
+                    color = TemaGlobal.cor(Color(0xFFFF7200), Color(0xFFB85A00)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
-            TextButton(onClick = onBackClick, enabled = !carregando) { Text("VOLTAR", color = Color.White) }
+            TextButton(onClick = onBackClick, enabled = !carregando) { Text("VOLTAR", color = TemaGlobal.cor(Color.White, Color(0xFF191C1F))) }
             if (!erro.isNullOrBlank()) {
                 Spacer(Modifier.height(16.dp))
-                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
+                Text(erro, color = TemaGlobal.cor(Color(0xFFFF9E85), Color(0xFFB3261E)), fontSize = 12.sp)
             }
         }
     }

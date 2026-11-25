@@ -1,6 +1,7 @@
 
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import com.example.oroscorp_adm.R
 import com.example.oroscorp_adm.model.Camera
 import com.example.oroscorp_adm.model.StatusCamera
@@ -33,11 +34,11 @@ fun CamerasScreen(
     statusCameras: List<StatusCamera> = emptyList(),
     onCameraClick: (Int) -> Unit = {}
 ) {
-    val laranja = colorResource(R.color.Laranja)
-    val salmao = colorResource(R.color.Salmao)
-    val textoClaro = colorResource(R.color.TextoClaro)
-    val cartao = colorResource(R.color.Cartao)
-    val borda = colorResource(R.color.Borda)
+    val laranja = TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00))
+    val salmao = TemaGlobal.cor(colorResource(R.color.Salmao), Color(0xFFAD501B))
+    val textoClaro = TemaGlobal.cor(colorResource(R.color.TextoClaro), Color(0xFF65574F))
+    val cartao = TemaGlobal.cor(colorResource(R.color.Cartao), Color(0xFFFFFFFF))
+    val borda = TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF))
 
     var pesquisa by remember { mutableStateOf("") }
     var setorSelecionado by remember { mutableStateOf<Int?>(null) }
@@ -86,7 +87,7 @@ fun CamerasScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.Fundo))
+            .background(TemaGlobal.cor(colorResource(R.color.Fundo), Color(0xFFF2F3F5)))
     ) {
 
         // CABEÇALHO ORIGINAL
@@ -104,7 +105,7 @@ fun CamerasScreen(
                 contentDescription = "Logo OROSCORP",
                 modifier = Modifier
                     .weight(1f)
-                    .height(75.dp),
+                    .height(75.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit,
                 alignment = Alignment.CenterStart
             )
@@ -140,7 +141,7 @@ fun CamerasScreen(
 
             Text(
                 text = "Câmeras",
-                color = Color.White,
+                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -172,7 +173,7 @@ fun CamerasScreen(
                 placeholder = {
                     Text(
                         text = "Pesquisar câmera...",
-                        color = Color.Gray,
+                        color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                         fontSize = 14.sp
                     )
                 },
@@ -189,8 +190,8 @@ fun CamerasScreen(
                 ),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
+                    focusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
+                    unfocusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                     focusedBorderColor = laranja,
                     unfocusedBorderColor = borda,
                     focusedContainerColor = cartao,
@@ -229,8 +230,8 @@ fun CamerasScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        focusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
+                        unfocusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                         focusedBorderColor = laranja,
                         unfocusedBorderColor = borda,
                         focusedContainerColor = cartao,
@@ -251,7 +252,7 @@ fun CamerasScreen(
                         text = {
                             Text(
                                 "Todos os setores",
-                                color = Color.White
+                                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F))
                             )
                         },
                         onClick = {
@@ -265,7 +266,7 @@ fun CamerasScreen(
                             text = {
                                 Text(
                                     text = cameras.firstOrNull { it.id_setor == setor }?.nome_setor ?: "Setor $setor",
-                                    color = Color.White
+                                    color = TemaGlobal.cor(Color.White, Color(0xFF191C1F))
                                 )
                             },
                             onClick = {
@@ -329,7 +330,7 @@ fun CamerasScreen(
                     ) {
                         Text(
                             text = "Nenhuma câmera cadastrada",
-                            color = Color.White,
+                            color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -338,7 +339,7 @@ fun CamerasScreen(
 
                         Text(
                             text = "Aguardando dados da API.",
-                            color = Color.Gray,
+                            color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                             fontSize = 13.sp
                         )
                     }
@@ -364,7 +365,7 @@ fun CamerasScreen(
                     ) {
                         Text(
                             text = "Nenhuma câmera encontrada",
-                            color = Color.White,
+                            color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -373,7 +374,7 @@ fun CamerasScreen(
 
                         Text(
                             text = "Tente alterar a pesquisa ou o setor.",
-                            color = Color.Gray,
+                            color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                             fontSize = 12.sp
                         )
                     }
@@ -408,7 +409,7 @@ private fun CardCamera(
     statusCamera: StatusCamera,
     onClick: () -> Unit
 ) {
-    val salmao = colorResource(R.color.Salmao)
+    val salmao = TemaGlobal.cor(colorResource(R.color.Salmao), Color(0xFFAD501B))
 
     val online = statusCamera.status.equals(
         "online",
@@ -419,10 +420,10 @@ private fun CardCamera(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(colorResource(R.color.Cartao))
+            .background(TemaGlobal.cor(colorResource(R.color.Cartao), Color(0xFFFFFFFF)))
             .border(
                 1.dp,
-                colorResource(R.color.Borda),
+                TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF)),
                 RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -431,13 +432,13 @@ private fun CardCamera(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(155.dp)
-                .background(Color(0xFF14141E)),
+                .background(TemaGlobal.cor(Color(0xFF14141E), Color(0xFFE9EBEE))),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = if (online) "VISUALIZAR CÂMERA"
                     else if (statusCamera.id < 0) "STATUS INDISPONÍVEL" else "SEM SINAL",
-                color = if (online) salmao else Color.Gray,
+                color = if (online) salmao else TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                 fontSize = 13.sp
             )
 
@@ -463,7 +464,7 @@ private fun CardCamera(
         ) {
             Text(
                 text = camera.nome,
-                color = Color.White,
+                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -476,13 +477,13 @@ private fun CardCamera(
             ) {
                 Text(
                     text = camera.nome_setor ?: "Setor ${camera.id_setor}",
-                    color = colorResource(R.color.TextoClaro),
+                    color = TemaGlobal.cor(colorResource(R.color.TextoClaro), Color(0xFF65574F)),
                     fontSize = 12.sp
                 )
 
                 Text(
                     text = camera.endereco_stream.substringAfter("://").substringAfterLast("@").substringBefore("/"),
-                    color = Color.Gray,
+                    color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                     fontSize = 11.sp
                 )
             }
@@ -490,7 +491,7 @@ private fun CardCamera(
             Spacer(Modifier.height(15.dp))
 
             HorizontalDivider(
-                color = colorResource(R.color.Borda)
+                color = TemaGlobal.cor(colorResource(R.color.Borda), Color(0xFF9CA3AF))
             )
 
             Spacer(Modifier.height(10.dp))
@@ -501,7 +502,7 @@ private fun CardCamera(
             ) {
                 Text(
                     text = "",
-                    color = Color.LightGray,
+                    color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)),
                     fontSize = 11.sp
                 )
             }

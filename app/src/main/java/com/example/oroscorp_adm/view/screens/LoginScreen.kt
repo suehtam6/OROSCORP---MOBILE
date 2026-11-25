@@ -1,5 +1,7 @@
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
+import androidx.compose.foundation.background
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,12 +48,16 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        if (!TemaGlobal.modoClaro) {
         Image(
             painter = painterResource(id = R.drawable.fundo),
             contentDescription = "Fundo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        } else {
+            Box(Modifier.fillMaxSize().background(TemaGlobal.fundo))
+        }
 
         Column(
             modifier = Modifier
@@ -67,7 +73,7 @@ fun LoginScreen(
                 contentDescription = "Logo Oroscorp",
                 modifier = Modifier
                     .width(180.dp)
-                    .height(50.dp),
+                    .height(50.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit
             )
 
@@ -75,7 +81,7 @@ fun LoginScreen(
 
             Text(
                 text = "ENTRE NA SUA CONTA",
-                color = Color.White,
+                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -85,7 +91,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("E-mail", color = Color.Gray) },
+                placeholder = { Text("E-mail", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -96,8 +102,8 @@ fun LoginScreen(
                     unfocusedTextColor = Color.Black,
                     unfocusedContainerColor = Color(0xFFF5F3F3),
                     focusedContainerColor = Color(0xFFF5F3F3),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.borda),
+                    focusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.laranja)
                 )
             )
 
@@ -106,7 +112,7 @@ fun LoginScreen(
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("SENHA", color = Color.Gray) },
+                placeholder = { Text("SENHA", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier
@@ -118,8 +124,8 @@ fun LoginScreen(
                     unfocusedTextColor = Color.Black,
                     unfocusedContainerColor = Color(0xFFF5F3F3),
                     focusedContainerColor = Color(0xFFF5F3F3),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.borda),
+                    focusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.laranja)
                 )
             )
 
@@ -132,7 +138,7 @@ fun LoginScreen(
                 TextButton(onClick = onEsqueceuSenhaClick) {
                     Text(
                         "Esqueceu sua senha?",
-                        color = Color.White,
+                        color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                         fontSize = 12.sp
                     )
                 }
@@ -141,7 +147,7 @@ fun LoginScreen(
             Spacer(Modifier.height(24.dp))
 
             if (!erro.isNullOrBlank()) {
-                Text(erro, color = Color(0xFFFF9E85), fontSize = 12.sp)
+                Text(erro, color = TemaGlobal.cor(Color(0xFFFF9E85), Color(0xFFB3261E)), fontSize = 12.sp)
                 Spacer(Modifier.height(12.dp))
             }
 
@@ -164,7 +170,7 @@ fun LoginScreen(
             ) {
                 Text(
                     "ENTRAR",
-                    color = Color(0xFFFF7200),
+                    color = TemaGlobal.cor(Color(0xFFFF7200), Color(0xFFB85A00)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

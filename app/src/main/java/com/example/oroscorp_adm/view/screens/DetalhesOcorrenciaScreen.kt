@@ -1,6 +1,7 @@
 
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,11 +20,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.oroscorp_adm.R
 
-private val FundoDetalhes = Color(0xFF353535)
-private val CartaoDetalhes = Color(0xFF131619)
-private val LaranjaDetalhes = Color(0xFFFF6600)
-private val TextoSecundario = Color(0xFF9CA3AF)
-private val BordaDetalhes = Color(0xFF272C32)
+private val FundoDetalhes
+    get() = TemaGlobal.cor(Color(0xFF353535), Color(0xFFF2F3F5))
+private val CartaoDetalhes
+    get() = TemaGlobal.cor(Color(0xFF131619), Color(0xFFFFFFFF))
+private val LaranjaDetalhes
+    get() = TemaGlobal.cor(Color(0xFFFF6600), Color(0xFFB85A00))
+private val TextoSecundario
+    get() = TemaGlobal.cor(Color(0xFF9CA3AF), Color(0xFF60656B))
+private val BordaDetalhes
+    get() = TemaGlobal.cor(Color(0xFF272C32), Color(0xFF9CA3AF))
 
 data class HistoricoOcorrencia(
     val horario: String,
@@ -81,7 +87,7 @@ fun DetalhesOcorrenciaScreen(
                 contentDescription = "Logo OROSCORP",
                 modifier = Modifier
                     .weight(1f)
-                    .height(75.dp),
+                    .height(75.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit,
                 alignment = Alignment.CenterStart
             )
@@ -114,7 +120,7 @@ fun DetalhesOcorrenciaScreen(
             ) {
                 Text(
                     "Nenhuma ocorrência selecionada",
-                    color = Color.White
+                    color = TemaGlobal.cor(Color.White, Color(0xFF191C1F))
                 )
             }
         } else {
@@ -128,7 +134,7 @@ fun DetalhesOcorrenciaScreen(
 
                 Text(
                     "Detalhes da ocorrência",
-                    color = Color.White,
+                    color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
@@ -206,7 +212,7 @@ fun DetalhesOcorrenciaScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .background(
-                                    Color(0xFF302019),
+                                    TemaGlobal.cor(Color(0xFF302019), Color(0xFFFFF0E4)),
                                     CircleShape
                                 )
                                 .border(
@@ -234,7 +240,7 @@ fun DetalhesOcorrenciaScreen(
                             Text(
                                 ocorrencia.funcionario
                                     ?: "Não identificado",
-                                color = Color.White,
+                                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
@@ -313,14 +319,14 @@ fun DetalhesOcorrenciaScreen(
                                 .height(7.dp)
                                 .clip(RoundedCornerShape(5.dp)),
                             color = LaranjaDetalhes,
-                            trackColor = Color(0xFF292D33)
+                            trackColor = TemaGlobal.cor(Color(0xFF292D33), Color(0xFF9CA3AF))
                         )
 
                         Spacer(Modifier.height(14.dp))
 
                         Text(
                             "Detecção: ${ocorrencia.deteccaoIA ?: "Não informada"}",
-                            color = Color.LightGray,
+                            color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)),
                             fontSize = 12.sp
                         )
                     }
@@ -384,7 +390,7 @@ fun DetalhesOcorrenciaScreen(
                         ocorrencia.descricao.ifBlank {
                             "Descrição não informada."
                         },
-                        color = Color(0xFFCDD0D5),
+                        color = TemaGlobal.cor(Color(0xFFCDD0D5), Color(0xFF60656B)),
                         fontSize = 13.sp,
                         lineHeight = 20.sp
                     )
@@ -485,7 +491,7 @@ fun DetalhesOcorrenciaScreen(
 
                                     Text(
                                         item.descricao,
-                                        color = Color.White,
+                                        color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                                         fontSize = 12.sp
                                     )
                                 }
@@ -512,9 +518,9 @@ fun DetalhesOcorrenciaScreen(
                         border = BorderStroke(
                             1.dp,
                             if (fechada)
-                                Color(0xFF00B981)
+                                TemaGlobal.cor(Color(0xFF00B981), Color(0xFF00864A))
                             else
-                                Color(0xFFFF5555)
+                                TemaGlobal.cor(Color(0xFFFF5555), Color(0xFFB3261E))
                         ),
                         shape = RoundedCornerShape(8.dp)
                     ) {
@@ -524,9 +530,9 @@ fun DetalhesOcorrenciaScreen(
                             else
                                 "Fechar ocorrência",
                             color = if (fechada)
-                                Color(0xFF00B981)
+                                TemaGlobal.cor(Color(0xFF00B981), Color(0xFF00864A))
                             else
-                                Color(0xFFFF5555),
+                                TemaGlobal.cor(Color(0xFFFF5555), Color(0xFFB3261E)),
                             fontSize = 11.sp
                         )
                     }
@@ -620,7 +626,7 @@ private fun CampoDetalhes(
             .fillMaxWidth()
             .heightIn(min = 55.dp)
             .background(
-                Color(0xFF191D22),
+                TemaGlobal.cor(Color(0xFF191D22), Color(0xFFE9EBEE)),
                 RoundedCornerShape(8.dp)
             )
             .border(
@@ -640,7 +646,7 @@ private fun CampoDetalhes(
 
         Text(
             valor.ifBlank { "Não informado" },
-            color = Color.White,
+            color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium
         )

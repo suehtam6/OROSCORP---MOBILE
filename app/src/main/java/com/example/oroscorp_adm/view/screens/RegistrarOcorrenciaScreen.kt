@@ -1,5 +1,6 @@
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,9 +56,9 @@ fun RegistrarOcorrenciaScreen(
     erroApi: String? = null
 ) {
     val context = LocalContext.current
-    val fundo = colorResource(R.color.Fundo)
-    val laranja = colorResource(R.color.Laranja)
-    val cartao = colorResource(R.color.Cartao)
+    val fundo = TemaGlobal.cor(colorResource(R.color.Fundo), Color(0xFFF2F3F5))
+    val laranja = TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00))
+    val cartao = TemaGlobal.cor(colorResource(R.color.Cartao), Color(0xFFFFFFFF))
     var idFuncionario by remember { mutableStateOf<Int?>(null) }
     var idSetor by remember { mutableStateOf<Int?>(null) }
     var idCamera by remember { mutableStateOf<Int?>(null) }
@@ -81,7 +82,7 @@ fun RegistrarOcorrenciaScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Image(painterResource(R.drawable.logo), contentDescription = "Logo OROSCORP",
-                modifier = Modifier.weight(1f).height(75.dp), contentScale = ContentScale.Fit,
+                modifier = Modifier.weight(1f).height(75.dp).background(Color.Black, RoundedCornerShape(12.dp)), contentScale = ContentScale.Fit,
                 alignment = Alignment.CenterStart)
             Box(modifier = Modifier.size(55.dp).border(2.5.dp, laranja, RoundedCornerShape(18.dp))
                 .clickable(onClick = onBackClick), contentAlignment = Alignment.Center) {
@@ -89,13 +90,13 @@ fun RegistrarOcorrenciaScreen(
             }
         }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
-            Text("Registrar\nocorrência manual", color = Color.White, fontSize = 28.sp,
+            Text("Registrar\nocorrência manual", color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)), fontSize = 28.sp,
                 fontWeight = FontWeight.Bold, lineHeight = 34.sp)
             Spacer(Modifier.height(8.dp))
             Text("Cadastro sem evidência: data e horário não são gravados pelo banco sem uma foto.",
-                color = Color.LightGray, fontSize = 13.sp)
+                color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
             Spacer(Modifier.height(18.dp))
-            Column(Modifier.fillMaxWidth().background(cartao, RoundedCornerShape(16.dp)).padding(12.dp)) {
+            Column(Modifier.fillMaxWidth().background(cartao, RoundedCornerShape(16.dp)).then(if (TemaGlobal.modoClaro) Modifier.border(1.dp, TemaGlobal.borda, RoundedCornerShape(16.dp)) else Modifier).padding(12.dp)) {
                 SeletorOcorrencia("Funcionário", "Selecionar funcionário",
                     funcionarios.map { it.id to it.nome }, idFuncionario) { idFuncionario = it }
                 Spacer(Modifier.height(12.dp))
@@ -114,57 +115,57 @@ fun RegistrarOcorrenciaScreen(
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f)) {
-                        Text("Data", color = Color.LightGray, fontSize = 13.sp)
+                        Text("Data", color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
                         Spacer(Modifier.height(6.dp))
                         OutlinedButton(onClick = {
                             val now = Calendar.getInstance()
                             DatePickerDialog(context, { _, year, month, day ->
                                 data = "%02d/%02d/%04d".format(day, month + 1, year)
                             }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show()
-                        }, modifier = Modifier.fillMaxWidth()) { Text(data, color = Color.White, fontSize = 12.sp) }
+                        }, modifier = Modifier.fillMaxWidth()) { Text(data, color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)), fontSize = 12.sp) }
                     }
                     Column(Modifier.weight(1f)) {
-                        Text("Horário", color = Color.LightGray, fontSize = 13.sp)
+                        Text("Horário", color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
                         Spacer(Modifier.height(6.dp))
                         OutlinedButton(onClick = {
                             val now = Calendar.getInstance()
                             TimePickerDialog(context, { _, hour, minute ->
                                 horario = "%02d:%02d".format(hour, minute)
                             }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show()
-                        }, modifier = Modifier.fillMaxWidth()) { Text(horario, color = Color.White, fontSize = 12.sp) }
+                        }, modifier = Modifier.fillMaxWidth()) { Text(horario, color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)), fontSize = 12.sp) }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-                Text("Prioridade", color = Color.LightGray, fontSize = 13.sp)
+                Text("Prioridade", color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
                 Spacer(Modifier.height(7.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf("Baixa", "Média", "Alta").forEach { valor ->
                         OutlinedButton(
                             onClick = { prioridade = valor }, modifier = Modifier.weight(1f),
                             contentPadding = PaddingValues(horizontal = 2.dp),
-                            border = BorderStroke(1.dp, if (prioridade == valor) laranja else Color.Gray)
-                        ) { Text(valor, fontSize = 10.sp, color = if (prioridade == valor) laranja else Color.White) }
+                            border = BorderStroke(1.dp, if (prioridade == valor) laranja else TemaGlobal.cor(Color.Gray, Color(0xFF60656B)))
+                        ) { Text(valor, fontSize = 10.sp, color = if (prioridade == valor) laranja else TemaGlobal.cor(Color.White, Color(0xFF191C1F))) }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-                Text("Descrição", color = Color.LightGray, fontSize = 13.sp)
+                Text("Descrição", color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
                 Spacer(Modifier.height(6.dp))
                 OutlinedTextField(value = descricao, onValueChange = { descricao = it },
                     modifier = Modifier.fillMaxWidth().height(110.dp),
-                    placeholder = { Text("Descreva o ocorrido...", color = Color.Gray) },
+                    placeholder = { Text("Descreva o ocorrido...", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                        focusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)), unfocusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                         focusedContainerColor = fundo, unfocusedContainerColor = fundo,
                         focusedBorderColor = laranja))
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(onClick = { imagens.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
                     Text(if (evidencia == null) "Selecionar evidência" else "Evidência selecionada",
-                        color = Color.White)
+                        color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)))
                 }
             }
             if (!erroValidacao.isNullOrBlank() || !erroApi.isNullOrBlank()) {
                 Spacer(Modifier.height(12.dp))
-                Text(erroValidacao ?: erroApi.orEmpty(), color = Color(0xFFFFA085), fontSize = 12.sp)
+                Text(erroValidacao ?: erroApi.orEmpty(), color = TemaGlobal.cor(Color(0xFFFFA085), Color(0xFFB3261E)), fontSize = 12.sp)
             }
             Spacer(Modifier.height(18.dp))
             Button(
@@ -201,17 +202,17 @@ private fun SeletorOcorrencia(
 ) {
     var aberto by remember { mutableStateOf(false) }
     Column {
-        Text(titulo, color = Color.LightGray, fontSize = 13.sp)
+        Text(titulo, color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
         Spacer(Modifier.height(6.dp))
         ExposedDropdownMenuBox(expanded = aberto, onExpandedChange = { aberto = it }) {
             OutlinedTextField(
                 value = opcoes.firstOrNull { it.first == selecionado }?.second ?: "",
                 onValueChange = {}, readOnly = true, modifier = Modifier.fillMaxWidth().menuAnchor(),
-                placeholder = { Text(placeholder, color = Color.Gray, fontSize = 12.sp) },
+                placeholder = { Text(placeholder, color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B)), fontSize = 12.sp) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = aberto) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                    focusedContainerColor = Color(0xFF171717), unfocusedContainerColor = Color(0xFF171717))
+                    focusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)), unfocusedTextColor = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
+                    focusedContainerColor = TemaGlobal.cor(Color(0xFF171717), Color(0xFFFFFFFF)), unfocusedContainerColor = TemaGlobal.cor(Color(0xFF171717), Color(0xFFFFFFFF)))
             )
             ExposedDropdownMenu(expanded = aberto, onDismissRequest = { aberto = false }) {
                 DropdownMenuItem(text = { Text("Nenhum") }, onClick = { onSelecionar(null); aberto = false })

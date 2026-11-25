@@ -1,5 +1,7 @@
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
+import androidx.compose.foundation.background
 import com.example.oroscorp_adm.R
 
 import androidx.compose.foundation.Image
@@ -34,12 +36,16 @@ fun EsqueceuSenhaScreen(
     ) {
 
         // IMAGEM DE FUNDO
+        if (!TemaGlobal.modoClaro) {
         Image(
             painter = painterResource(id = R.drawable.fundo),
             contentDescription = "Fundo",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        } else {
+            Box(Modifier.fillMaxSize().background(TemaGlobal.fundo))
+        }
 
         // CONTEÚDO DA TELA
         Column(
@@ -58,7 +64,7 @@ fun EsqueceuSenhaScreen(
                 contentDescription = "Logo Oroscorp",
                 modifier = Modifier
                     .width(180.dp)
-                    .height(50.dp),
+                    .height(50.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Fit
             )
 
@@ -67,7 +73,7 @@ fun EsqueceuSenhaScreen(
             // INSTRUÇÃO
             Text(
                 text = "DIGITE SEU E-MAIL PARA\nPODERMOS REDEFINIR\nSUA SENHA",
-                color = Color.White,
+                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -84,7 +90,7 @@ fun EsqueceuSenhaScreen(
                 placeholder = {
                     Text(
                         text = "e-mail",
-                        color = Color.Gray
+                        color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))
                     )
                 },
                 modifier = Modifier
@@ -97,8 +103,8 @@ fun EsqueceuSenhaScreen(
                     unfocusedTextColor = Color.Black,
                     unfocusedContainerColor = Color(0xFFF5F3F3),
                     focusedContainerColor = Color(0xFFF5F3F3),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
+                    unfocusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.borda),
+                    focusedBorderColor = TemaGlobal.cor(Color.Transparent, TemaGlobal.laranja)
                 )
             )
 
@@ -124,7 +130,7 @@ fun EsqueceuSenhaScreen(
             ) {
                 Text(
                     text = "CONTINUE",
-                    color = Color(0xFFFF7200),
+                    color = TemaGlobal.cor(Color(0xFFFF7200), Color(0xFFB85A00)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -145,7 +151,7 @@ fun EsqueceuSenhaScreen(
             ) {
                 Text(
                     text = "VOLTAR",
-                    color = Color(0xFFFF7200),
+                    color = TemaGlobal.cor(Color(0xFFFF7200), Color(0xFFB85A00)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -158,7 +164,7 @@ fun EsqueceuSenhaScreen(
 
                 Text(
                     text = erro,
-                    color = Color(0xFFFF9E85),
+                    color = TemaGlobal.cor(Color(0xFFFF9E85), Color(0xFFB3261E)),
                     fontSize = 12.sp
                 )
             }

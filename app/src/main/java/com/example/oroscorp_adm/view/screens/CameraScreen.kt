@@ -1,6 +1,7 @@
 
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.*
@@ -38,18 +39,18 @@ fun CameraScreen(
     temAnterior: Boolean = false,
     temProxima: Boolean = false
 ) {
-    val laranja = Color(0xFFFF8800)
+    val laranja = TemaGlobal.cor(Color(0xFFFF8800), Color(0xFFB85A00))
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF333333))
+            .background(TemaGlobal.cor(Color(0xFF333333), Color(0xFFF2F3F5)))
             .verticalScroll(rememberScrollState())
             .padding(14.dp)
     ) {
         Text(
             text = nomeCamera,
-            color = Color.White,
+            color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
             fontSize = 21.sp,
             fontWeight = FontWeight.Bold
         )

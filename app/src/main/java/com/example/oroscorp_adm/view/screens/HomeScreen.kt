@@ -1,6 +1,7 @@
 
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,14 +24,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.oroscorp_adm.R
 
-private val Fundo = Color(0xFF1C1E20)
-private val Cartao = Color(0xFF101315)
-private val CartaoSecundario = Color(0xFF191C1F)
-private val Laranja = Color(0xFFFF9500)
-private val Branco = Color(0xFFF5F5F5)
-private val Cinza = Color(0xFF9CA0A6)
-private val Verde = Color(0xFF20C982)
-private val Borda = Color(0xFF292D31)
+private val Fundo
+    get() = TemaGlobal.cor(Color(0xFF1C1E20), Color(0xFFF2F3F5))
+private val Cartao
+    get() = TemaGlobal.cor(Color(0xFF101315), Color(0xFFFFFFFF))
+private val CartaoSecundario
+    get() = TemaGlobal.cor(Color(0xFF191C1F), Color(0xFFE9EBEE))
+private val Laranja
+    get() = TemaGlobal.cor(Color(0xFFFF9500), Color(0xFFB85A00))
+private val Branco
+    get() = TemaGlobal.cor(Color(0xFFF5F5F5), Color(0xFF191C1F))
+private val Cinza
+    get() = TemaGlobal.cor(Color(0xFF9CA0A6), Color(0xFF60656B))
+private val Verde
+    get() = TemaGlobal.cor(Color(0xFF20C982), Color(0xFF00864A))
+private val Borda
+    get() = TemaGlobal.cor(Color(0xFF292D31), Color(0xFF9CA3AF))
 
 @Composable
 fun HomeScreen(
@@ -67,7 +76,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .background(Color(0xFF080A0B))
+                    .background(Color.Black)
                     .padding(horizontal = 18.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -91,7 +100,7 @@ fun HomeScreen(
                     contentDescription = "OROSCORP",
                     modifier = Modifier
                         .width(165.dp)
-                        .height(46.dp),
+                        .height(46.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Fit
                 )
 
@@ -180,7 +189,7 @@ fun HomeScreen(
                     item {
                         Text(
                             text = erro,
-                            color = Color(0xFFFF8C80),
+                            color = TemaGlobal.cor(Color(0xFFFF8C80), Color(0xFFB3261E)),
                             fontSize = 12.sp
                         )
                     }
@@ -461,7 +470,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxHeight()
                         .width(275.dp)
-                        .background(Color(0xFF141617))
+                        .background(TemaGlobal.cor(Color(0xFF141617), Color(0xFFFFFFFF)))
                         .border(1.dp, Borda)
                         .verticalScroll(rememberScrollState())
                         .padding(18.dp)
@@ -473,7 +482,7 @@ fun HomeScreen(
                         contentDescription = "OROSCORP",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp),
+                            .height(48.dp).background(Color.Black, RoundedCornerShape(12.dp)),
                         contentScale = ContentScale.Fit
                     )
 
@@ -561,7 +570,7 @@ fun HomeScreen(
                     ) {
                         Text(
                             "Sair da conta",
-                            color = Color(0xFFFF7777)
+                            color = TemaGlobal.cor(Color(0xFFFF7777), Color(0xFFB3261E))
                         )
                     }
                 }

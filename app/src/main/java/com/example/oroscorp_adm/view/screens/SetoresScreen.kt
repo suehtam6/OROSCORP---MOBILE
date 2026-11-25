@@ -1,6 +1,7 @@
 
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import com.example.oroscorp_adm.R
 
 import androidx.compose.foundation.Image
@@ -26,12 +27,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // CORES
-private val cartaoSetor = Color(0xFF14171C)
-private val internoSetor = Color(0xFF1B1F25)
-private val laranjaSetor = Color(0xFFFF7900)
-private val verdeSetor = Color(0xFF21CA70)
-private val vermelhoSetor = Color(0xFFFF454D)
-private val cinzaSetor = Color(0xFF9BA6B7)
+private val cartaoSetor
+    get() = TemaGlobal.cor(Color(0xFF14171C), Color(0xFFFFFFFF))
+private val internoSetor
+    get() = TemaGlobal.cor(Color(0xFF1B1F25), Color(0xFFE9EBEE))
+private val laranjaSetor
+    get() = TemaGlobal.cor(Color(0xFFFF7900), Color(0xFFB85A00))
+private val verdeSetor
+    get() = TemaGlobal.cor(Color(0xFF21CA70), Color(0xFF00864A))
+private val vermelhoSetor
+    get() = TemaGlobal.cor(Color(0xFFFF454D), Color(0xFFB3261E))
+private val cinzaSetor
+    get() = TemaGlobal.cor(Color(0xFF9BA6B7), Color(0xFF60656B))
 
 // MODELOS DOS DADOS
 
@@ -89,7 +96,7 @@ private fun CabecalhoSetor(
             contentDescription = "Logo OROSCORP",
             modifier = Modifier
                 .weight(1f)
-                .height(75.dp),
+                .height(75.dp).background(Color.Black, RoundedCornerShape(12.dp)),
             contentScale = ContentScale.Fit,
             alignment = Alignment.CenterStart
         )
@@ -101,7 +108,7 @@ private fun CabecalhoSetor(
                 .size(55.dp)
                 .border(
                     2.5.dp,
-                    colorResource(R.color.Laranja),
+                    TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00)),
                     RoundedCornerShape(18.dp)
                 )
                 .clickable { onVoltar() },
@@ -109,7 +116,7 @@ private fun CabecalhoSetor(
         ) {
             Text(
                 text = "←",
-                color = colorResource(R.color.Laranja),
+                color = TemaGlobal.cor(colorResource(R.color.Laranja), Color(0xFFB85A00)),
                 fontSize = 34.sp
             )
         }
@@ -133,14 +140,14 @@ private fun IndicadorSetor(
             )
             .border(
                 1.dp,
-                Color(0xFF282D35),
+                TemaGlobal.cor(Color(0xFF282D35), Color(0xFF9CA3AF)),
                 RoundedCornerShape(12.dp)
             )
             .padding(12.dp)
     ) {
         Text(
             text = numero?.toString() ?: "—",
-            color = if (destaque) laranjaSetor else Color.White,
+            color = if (destaque) laranjaSetor else TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold
         )
@@ -166,16 +173,17 @@ private fun CartaoSetor(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = colorResource(R.color.Cartao)
+            containerColor = TemaGlobal.cor(colorResource(R.color.Cartao), Color(0xFFFFFFFF))
         ),
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(18.dp),
+        border = if (TemaGlobal.modoClaro) androidx.compose.foundation.BorderStroke(1.dp, TemaGlobal.borda) else null
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = setor.nome,
-                color = Color.White,
+                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -226,7 +234,7 @@ private fun CartaoSetor(
                     )
                     .border(
                         1.dp,
-                        Color(0xFF303640),
+                        TemaGlobal.cor(Color(0xFF303640), Color(0xFF9CA3AF)),
                         RoundedCornerShape(12.dp)
                     )
                     .clickable { onAbrir() },
@@ -234,7 +242,7 @@ private fun CartaoSetor(
             ) {
                 Text(
                     text = "Ver setor  ›",
-                    color = Color.White,
+                    color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                     fontSize = 14.sp
                 )
             }
@@ -253,7 +261,7 @@ fun SetoresScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.Fundo))
+            .background(TemaGlobal.cor(colorResource(R.color.Fundo), Color(0xFFF2F3F5)))
     ) {
         CabecalhoSetor(onVoltar)
 
@@ -266,7 +274,7 @@ fun SetoresScreen(
                     text = "Setores",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = TemaGlobal.cor(Color.White, Color(0xFF191C1F))
                 )
 
                 Spacer(Modifier.height(6.dp))
@@ -335,7 +343,7 @@ private fun PainelSetor(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Color(0xFF171717),
+                TemaGlobal.cor(Color(0xFF171717), Color(0xFFFFFFFF)),
                 RoundedCornerShape(20.dp)
             )
             .padding(16.dp),
@@ -368,12 +376,12 @@ private fun LinhaCameraSetor(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Color(0xFF0D1012),
+                TemaGlobal.cor(Color(0xFF0D1012), Color(0xFFFFFFFF)),
                 RoundedCornerShape(12.dp)
             )
             .border(
                 1.dp,
-                Color(0xFF282D35),
+                TemaGlobal.cor(Color(0xFF282D35), Color(0xFF9CA3AF)),
                 RoundedCornerShape(12.dp)
             )
             .padding(14.dp),
@@ -389,7 +397,7 @@ private fun LinhaCameraSetor(
 
         Text(
             text = camera.nome,
-            color = Color.White,
+            color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
             modifier = Modifier.weight(1f),
             fontSize = 14.sp
         )
@@ -416,14 +424,14 @@ private fun LinhaFuncionario(
             .fillMaxWidth()
             .border(
                 0.5.dp,
-                Color.Gray
+                TemaGlobal.cor(Color.Gray, Color(0xFF60656B))
             )
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = funcionario.nome,
-            color = Color.White,
+            color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
             fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1.2f),
@@ -460,12 +468,12 @@ private fun CartaoOcorrencia(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Color(0xFF0D1012),
+                TemaGlobal.cor(Color(0xFF0D1012), Color(0xFFFFFFFF)),
                 RoundedCornerShape(12.dp)
             )
             .border(
                 1.dp,
-                Color(0xFF282D35),
+                TemaGlobal.cor(Color(0xFF282D35), Color(0xFF9CA3AF)),
                 RoundedCornerShape(12.dp)
             )
             .padding(14.dp)
@@ -531,7 +539,7 @@ fun DetalhesSetorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(R.color.Fundo))
+            .background(TemaGlobal.cor(colorResource(R.color.Fundo), Color(0xFFF2F3F5)))
     ) {
         CabecalhoSetor(onVoltar)
 
@@ -562,7 +570,7 @@ fun DetalhesSetorScreen(
                 item {
                     Text(
                         text = setor.nome,
-                        color = Color.White,
+                        color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
@@ -621,7 +629,7 @@ fun DetalhesSetorScreen(
                         ) {
                             Text(
                                 text = setor.cameras?.toString() ?: "—",
-                                color = Color.White,
+                                color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)),
                                 fontSize = 30.sp,
                                 fontWeight = FontWeight.Bold
                             )

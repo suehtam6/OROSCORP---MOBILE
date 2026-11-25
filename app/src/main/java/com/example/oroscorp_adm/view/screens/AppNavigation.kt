@@ -1,6 +1,7 @@
 
 package com.example.oroscorp_adm.view.screens
 
+import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -23,10 +24,14 @@ import kotlinx.coroutines.launch
 
 import java.time.LocalDate
 
-private val CorFundoPopup = Color(0xFF101315)
-private val CorLaranjaPopup = Color(0xFFFF9500)
-private val CorTextoPopup = Color(0xFFF5F5F5)
-private val CorTextoSecundarioPopup = Color(0xFFB0B0B0)
+private val CorFundoPopup
+    get() = TemaGlobal.cor(Color(0xFF101315), Color(0xFFFFFFFF))
+private val CorLaranjaPopup
+    get() = TemaGlobal.cor(Color(0xFFFF9500), Color(0xFFB85A00))
+private val CorTextoPopup
+    get() = TemaGlobal.cor(Color(0xFFF5F5F5), Color(0xFF191C1F))
+private val CorTextoSecundarioPopup
+    get() = TemaGlobal.cor(Color(0xFFB0B0B0), Color(0xFF60656B))
 
 @Composable
 private fun PopupErroOroscorp(
@@ -209,13 +214,33 @@ fun AppNavigation() {
 
     // STATUS DAS CONSULTAS
 
-    var setoresOk by remember { mutableStateOf(false) }
-    var camerasOk by remember { mutableStateOf(false) }
-    var funcionariosOk by remember { mutableStateOf(false) }
-    var ocorrenciasOk by remember { mutableStateOf(false) }
-    var statusCamerasOk by remember { mutableStateOf(false) }
-    var statusOcorrenciasOk by remember { mutableStateOf(false) }
-    var evidenciasOk by remember { mutableStateOf(false) }
+    var setoresOk by remember {
+        mutableStateOf(false)
+    }
+
+    var camerasOk by remember {
+        mutableStateOf(false)
+    }
+
+    var funcionariosOk by remember {
+        mutableStateOf(false)
+    }
+
+    var ocorrenciasOk by remember {
+        mutableStateOf(false)
+    }
+
+    var statusCamerasOk by remember {
+        mutableStateOf(false)
+    }
+
+    var statusOcorrenciasOk by remember {
+        mutableStateOf(false)
+    }
+
+    var evidenciasOk by remember {
+        mutableStateOf(false)
+    }
 
     // CARREGAMENTO DE DADOS
 
@@ -250,9 +275,13 @@ fun AppNavigation() {
         ) {
             try {
                 sucesso(consulta())
+
             } catch (e: CancellationException) {
+
                 throw e
+
             } catch (e: Exception) {
+
                 falha()
 
                 avisos.add(
@@ -262,13 +291,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarSetores() {
+
             consultar(
                 nome = "Setores",
                 consulta = repo::setores,
+
                 sucesso = {
                     setores = it
                     setoresOk = true
                 },
+
                 falha = {
                     setores = emptyList()
                     setoresOk = false
@@ -277,13 +309,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarCameras() {
+
             consultar(
                 nome = "Câmeras",
                 consulta = repo::cameras,
+
                 sucesso = {
                     cameras = it
                     camerasOk = true
                 },
+
                 falha = {
                     cameras = emptyList()
                     camerasOk = false
@@ -292,13 +327,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarFuncionarios() {
+
             consultar(
                 nome = "Funcionários",
                 consulta = repo::funcionarios,
+
                 sucesso = {
                     funcionarios = it
                     funcionariosOk = true
                 },
+
                 falha = {
                     funcionarios = emptyList()
                     funcionariosOk = false
@@ -307,13 +345,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarOcorrencias() {
+
             consultar(
                 nome = "Ocorrências",
                 consulta = repo::ocorrencias,
+
                 sucesso = {
                     ocorrencias = it
                     ocorrenciasOk = true
                 },
+
                 falha = {
                     ocorrencias = emptyList()
                     ocorrenciasOk = false
@@ -322,13 +363,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarStatusCameras() {
+
             consultar(
                 nome = "Status das câmeras",
                 consulta = repo::statusCameras,
+
                 sucesso = {
                     statusCameras = it
                     statusCamerasOk = true
                 },
+
                 falha = {
                     statusCameras = emptyList()
                     statusCamerasOk = false
@@ -337,13 +381,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarStatusOcorrencias() {
+
             consultar(
                 nome = "Status das ocorrências",
                 consulta = repo::statusOcorrencias,
+
                 sucesso = {
                     statusOcorrencias = it
                     statusOcorrenciasOk = true
                 },
+
                 falha = {
                     statusOcorrencias = emptyList()
                     statusOcorrenciasOk = false
@@ -352,13 +399,16 @@ fun AppNavigation() {
         }
 
         suspend fun carregarEvidencias() {
+
             consultar(
                 nome = "Evidências",
                 consulta = repo::evidencias,
+
                 sucesso = {
                     evidencias = it
                     evidenciasOk = true
                 },
+
                 falha = {
                     evidencias = emptyList()
                     evidenciasOk = false
@@ -367,9 +417,13 @@ fun AppNavigation() {
         }
 
         try {
+
             when (tela) {
 
+                // DASHBOARD
+
                 "home" -> {
+
                     carregarCameras()
                     carregarStatusCameras()
                     carregarOcorrencias()
@@ -377,7 +431,10 @@ fun AppNavigation() {
                     carregarEvidencias()
                 }
 
+                // SETORES
+
                 "setores", "detalhesSetor" -> {
+
                     carregarSetores()
                     carregarCameras()
                     carregarFuncionarios()
@@ -389,9 +446,11 @@ fun AppNavigation() {
                     consultar(
                         nome = "Cargos",
                         consulta = repo::cargos,
+
                         sucesso = {
                             cargos = it
                         },
+
                         falha = {
                             cargos = emptyList()
                         }
@@ -400,37 +459,50 @@ fun AppNavigation() {
                     consultar(
                         nome = "Status dos funcionários",
                         consulta = repo::statusFuncionarios,
+
                         sucesso = {
                             statusFuncionarios = it
                         },
+
                         falha = {
                             statusFuncionarios = emptyList()
                         }
                     )
                 }
 
+                // CÂMERAS
+
                 "cameras", "camera" -> {
+
                     carregarSetores()
                     carregarCameras()
                     carregarStatusCameras()
                 }
 
+                // FUNCIONÁRIOS
+
                 "funcionarios" -> {
+
                     carregarFuncionarios()
 
                     consultar(
                         nome = "Cargos",
                         consulta = repo::cargos,
+
                         sucesso = {
                             cargos = it
                         },
+
                         falha = {
                             cargos = emptyList()
                         }
                     )
                 }
 
+                // OCORRÊNCIAS
+
                 "ocorrencias", "detalhesOcorrencia" -> {
+
                     carregarOcorrencias()
                     carregarStatusOcorrencias()
                     carregarEvidencias()
@@ -439,9 +511,11 @@ fun AppNavigation() {
                     consultar(
                         nome = "Motivos",
                         consulta = repo::motivos,
+
                         sucesso = {
                             motivos = it
                         },
+
                         falha = {
                             motivos = emptyList()
                         }
@@ -450,16 +524,21 @@ fun AppNavigation() {
                     consultar(
                         nome = "EPIs das ocorrências",
                         consulta = repo::ocorrenciaEpis,
+
                         sucesso = {
                             vinculosEpi = it
                         },
+
                         falha = {
                             vinculosEpi = emptyList()
                         }
                     )
                 }
 
+                // REGISTRAR OCORRÊNCIA
+
                 "registrar" -> {
+
                     carregarFuncionarios()
                     carregarSetores()
                     carregarCameras()
@@ -467,9 +546,11 @@ fun AppNavigation() {
                     consultar(
                         nome = "Motivos",
                         consulta = repo::motivos,
+
                         sucesso = {
                             motivos = it
                         },
+
                         falha = {
                             motivos = emptyList()
                         }
@@ -478,16 +559,20 @@ fun AppNavigation() {
                     consultar(
                         nome = "EPIs",
                         consulta = repo::epis,
+
                         sucesso = {
                             epis = it
                         },
+
                         falha = {
                             epis = emptyList()
                         }
                     )
                 }
             }
+
         } finally {
+
             mensagemErro = avisos
                 .takeIf { it.isNotEmpty() }
                 ?.joinToString("\n")
@@ -500,6 +585,7 @@ fun AppNavigation() {
 
     val setorInfo: List<SetorInfo> =
         if (setoresOk) {
+
             setores.map { setor ->
 
                 val ocorrenciasDoSetor = ocorrencias.filter {
@@ -508,6 +594,7 @@ fun AppNavigation() {
 
                 val statusConhecidos =
                     ocorrenciasDoSetor.all { ocorrencia ->
+
                         statusOcorrencias.any {
                             it.id ==
                                     ocorrencia.id_status_ocorrencia
@@ -520,7 +607,9 @@ fun AppNavigation() {
                         statusOcorrenciasOk &&
                         statusConhecidos
                     ) {
+
                         ocorrenciasDoSetor.count { ocorrencia ->
+
                             val status = statusOcorrencias
                                 .firstOrNull {
                                     it.id ==
@@ -532,35 +621,47 @@ fun AppNavigation() {
                             status.equals("Aberta", true) ||
                                     status.equals("Em aberto", true)
                         }
+
                     } else {
+
                         null
                     }
 
                 SetorInfo(
                     id = setor.id,
+
                     nome = setor.nome,
+
                     descricao = setor.descricao,
 
                     funcionarios = if (funcionariosOk) {
+
                         funcionarios.count {
                             it.id_setor == setor.id
                         }
+
                     } else {
+
                         null
                     },
 
                     cameras = if (camerasOk) {
+
                         cameras.count {
                             it.id_setor == setor.id
                         }
+
                     } else {
+
                         null
                     },
 
                     abertas = abertas
                 )
             }
+
         } else {
+
             emptyList()
         }
 
@@ -585,6 +686,7 @@ fun AppNavigation() {
         }
 
         DetalhesOcorrencia(
+
             id = item.id,
 
             tipoIA = item.nome_origem.equals(
@@ -596,6 +698,7 @@ fun AppNavigation() {
                 !item.nome_origem.isNullOrBlank(),
 
             funcionario = item.nome_funcionario,
+
             descricao = item.descricao.orEmpty(),
 
             epi = vinculosEpi
@@ -607,7 +710,9 @@ fun AppNavigation() {
                 }
                 .joinToString(),
 
-            camera = evidencia?.nome_camera.orEmpty(),
+            camera = evidencia
+                ?.nome_camera
+                .orEmpty(),
 
             data = evidencia
                 ?.dataHora
@@ -620,18 +725,25 @@ fun AppNavigation() {
                 ?.take(8)
                 .orEmpty(),
 
-            confiancaIA = evidencia?.confianca_ia,
-            evidenciaUrl = evidencia?.foto,
+            confiancaIA = evidencia
+                ?.confianca_ia,
 
-            status = status?.status
+            evidenciaUrl = evidencia
+                ?.foto,
+
+            status = status
+                ?.status
                 ?: item.nome_status_ocorrencia.orEmpty(),
 
-            prioridade = item.nome_prioridade ?: "—",
+            prioridade =
+                item.nome_prioridade ?: "—",
 
-            tipo = motivo?.nome
+            tipo = motivo
+                ?.nome
                 ?: item.nome_motivo_ocorrencia.orEmpty(),
 
-            setor = setor?.nome
+            setor = setor
+                ?.nome
                 ?: item.nome_setor.orEmpty()
         )
     }
@@ -645,8 +757,11 @@ fun AppNavigation() {
         }
 
         CameraInfo(
+
             id = camera.id,
+
             nome = camera.nome,
+
             setorId = camera.id_setor,
 
             online = status?.status.equals(
@@ -667,6 +782,7 @@ fun AppNavigation() {
         }
 
         FuncionarioInfo(
+
             nome = funcionario.nome,
 
             cargo = cargos.firstOrNull {
@@ -679,6 +795,7 @@ fun AppNavigation() {
             ),
 
             setorId = funcionario.id_setor,
+
             statusConhecido = status != null
         )
     }
@@ -692,8 +809,11 @@ fun AppNavigation() {
         }
 
         OcorrenciaInfo(
+
             codigo = "#${ocorrencia.id}",
-            funcionario = ocorrencia.nome_funcionario ?: "—",
+
+            funcionario =
+                ocorrencia.nome_funcionario ?: "—",
 
             data = evidencia
                 ?.dataHora
@@ -703,7 +823,9 @@ fun AppNavigation() {
                 it.id == ocorrencia.id_status_ocorrencia
             }?.status ?: "—",
 
-            origem = ocorrencia.nome_origem ?: "—",
+            origem =
+                ocorrencia.nome_origem ?: "—",
+
             setorId = ocorrencia.id_setor
         )
     }
@@ -715,12 +837,15 @@ fun AppNavigation() {
             camerasOk &&
             statusCamerasOk &&
             cameras.all { camera ->
+
                 statusCameras.any {
                     it.id == camera.id_status_camera
                 }
             }
         ) {
+
             cameras.count { camera ->
+
                 statusCameras.firstOrNull {
                     it.id == camera.id_status_camera
                 }?.status.equals(
@@ -728,19 +853,31 @@ fun AppNavigation() {
                     ignoreCase = true
                 )
             }
+
         } else {
+
             null
         }
 
     val totalCameras: Int? =
-        if (camerasOk) cameras.size else null
+        if (camerasOk) {
+
+            cameras.size
+
+        } else {
+
+            null
+        }
 
     val aguardandoIdentificacao: Int? =
         if (ocorrenciasOk) {
+
             ocorrencias.count {
                 it.id_funcionario == null
             }
+
         } else {
+
             null
         }
 
@@ -750,6 +887,7 @@ fun AppNavigation() {
             val hoje = LocalDate.now().toString()
 
             val todasComData = ocorrencias.all { ocorrencia ->
+
                 evidencias.any {
                     it.id_ocorrencia == ocorrencia.id &&
                             !it.dataHora.isNullOrBlank()
@@ -757,16 +895,25 @@ fun AppNavigation() {
             }
 
             if (todasComData) {
+
                 ocorrencias.count { ocorrencia ->
+
                     evidencias.any { evidencia ->
-                        evidencia.id_ocorrencia == ocorrencia.id &&
-                                evidencia.dataHora?.take(10) == hoje
+
+                        evidencia.id_ocorrencia ==
+                                ocorrencia.id &&
+                                evidencia.dataHora?.take(10) ==
+                                hoje
                     }
                 }
+
             } else {
+
                 null
             }
+
         } else {
+
             null
         }
 
@@ -776,6 +923,7 @@ fun AppNavigation() {
     // Prioriza o erro da tela atual.
 
     val erroAtual: String? = when (tela) {
+
         "login" -> erroLogin
 
         "esqueceu", "codigo", "trocar" -> erroSenha
@@ -786,7 +934,9 @@ fun AppNavigation() {
     }
 
     fun fecharPopupErro() {
+
         when (tela) {
+
             "login" -> {
                 erroLogin = null
             }
@@ -811,46 +961,72 @@ fun AppNavigation() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF353535))
+            .background(TemaGlobal.cor(Color(0xFF353535), Color(0xFFF2F3F5)))
     ) {
 
         when (tela) {
 
+            // LOGIN
+
             "login" -> LoginScreen(
+
                 onEntrarClick = {},
 
                 onEsqueceuSenhaClick = {
+
                     erroSenha = null
+
                     tela = "esqueceu"
                 },
 
                 onEntrarComCredenciais = { email, senha ->
+
                     scope.launch {
+
                         erroLogin = null
+
                         carregando = true
 
                         try {
-                            usuarioAtual = repo.login(email, senha)
+
+                            usuarioAtual = repo.login(
+                                email,
+                                senha
+                            )
+
                             tela = "home"
+
                         } catch (e: CancellationException) {
+
                             throw e
+
                         } catch (e: Exception) {
+
                             erroLogin = e.message
                                 ?: "Não foi possível realizar o login."
+
                         } finally {
+
                             carregando = false
                         }
                     }
                 },
 
                 carregando = carregando,
+
                 erro = null
             )
 
+            // ESQUECEU SENHA
+
             "esqueceu" -> EsqueceuSenhaScreen(
+
                 onBackClick = {
+
                     if (!carregando) {
+
                         erroSenha = null
+
                         tela = "login"
                     }
                 },
@@ -858,33 +1034,52 @@ fun AppNavigation() {
                 onContinueClick = {},
 
                 onEnviarEmail = { email ->
+
                     scope.launch {
+
                         carregando = true
+
                         erroSenha = null
 
                         try {
+
                             repo.solicitarSenha(email)
+
                             emailRecuperacao = email.trim()
+
                             tela = "codigo"
+
                         } catch (e: CancellationException) {
+
                             throw e
+
                         } catch (e: Exception) {
+
                             erroSenha = e.message
                                 ?: "Não foi possível solicitar a recuperação de senha."
+
                         } finally {
+
                             carregando = false
                         }
                     }
                 },
 
                 erro = null,
+
                 carregando = carregando
             )
 
+            // CÓDIGO DE RECUPERAÇÃO
+
             "codigo" -> RedefinirSenhaCodigo(
+
                 onBackClick = {
+
                     if (!carregando) {
+
                         erroSenha = null
+
                         tela = "esqueceu"
                     }
                 },
@@ -892,37 +1087,55 @@ fun AppNavigation() {
                 onContinueClick = {},
 
                 onValidarCodigo = { codigo ->
+
                     scope.launch {
+
                         carregando = true
+
                         erroSenha = null
 
                         try {
+
                             tokenRedefinicao = repo.validarCodigo(
                                 emailRecuperacao,
                                 codigo
                             )
 
                             tela = "trocar"
+
                         } catch (e: CancellationException) {
+
                             throw e
+
                         } catch (e: Exception) {
+
                             erroSenha = e.message
                                 ?: "Não foi possível validar o código."
+
                         } finally {
+
                             carregando = false
                         }
                     }
                 },
 
                 erro = null,
+
                 carregando = carregando
             )
 
+            // TROCAR SENHA
+
             "trocar" -> TrocarSenhaScreen(
+
                 onBackClick = {
+
                     if (!carregando) {
+
                         tokenRedefinicao = ""
+
                         erroSenha = null
+
                         tela = "esqueceu"
                     }
                 },
@@ -930,89 +1143,128 @@ fun AppNavigation() {
                 onRedefinirClick = {},
 
                 onConfirmarSenha = { senha ->
+
                     scope.launch {
+
                         carregando = true
+
                         erroSenha = null
 
                         try {
+
                             repo.redefinirSenha(
                                 tokenRedefinicao,
                                 senha
                             )
 
                             tokenRedefinicao = ""
+
                             emailRecuperacao = ""
+
                             erroLogin = null
+
                             tela = "login"
 
                         } catch (e: CancellationException) {
+
                             throw e
+
                         } catch (e: Exception) {
+
                             erroSenha = e.message
                                 ?: "Não foi possível redefinir a senha."
+
                         } finally {
+
                             carregando = false
                         }
                     }
                 },
 
                 erro = null,
+
                 carregando = carregando
             )
 
             // DASHBOARD
 
             "home" -> HomeScreen(
+
                 onDashboardClick = {
+
                     recarregar++
                 },
 
                 onSetoresClick = {
+
                     tela = "setores"
                 },
 
                 onCamerasClick = {
+
                     tela = "cameras"
                 },
 
                 onOcorrenciasClick = {
+
                     tela = "ocorrencias"
                 },
 
                 onFuncionariosClick = {
+
                     tela = "funcionarios"
                 },
 
                 onPerfilClick = {
+
                     tela = "perfil"
                 },
 
                 onSairClick = {
+
                     tela = "login"
+
                     erroLogin = null
+
                     usuarioAtual = null
+
                     mensagemErro = null
+
                     SessionAuth.clear()
                 },
 
                 ocorrenciasHoje = ocorrenciasHoje,
-                aguardandoIdentificacao = aguardandoIdentificacao,
+
+                aguardandoIdentificacao =
+                    aguardandoIdentificacao,
+
                 camerasOnline = camerasOnline,
+
                 totalCameras = totalCameras,
 
-                nomeUsuario = usuarioAtual?.nome.orEmpty(),
+                nomeUsuario =
+                    usuarioAtual?.nome.orEmpty(),
+
                 carregando = carregando,
+
                 erro = null,
+
                 dadosGrafico = dadosGrafico,
 
                 onAtualizarClick = {
+
                     recarregar++
                 }
             )
 
+            // PERFIL
+
             "perfil" -> PerfilAdminScreen(
+
                 usuario = usuarioAtual,
+
                 onBackClick = {
+
                     tela = "home"
                 }
             )
@@ -1020,85 +1272,120 @@ fun AppNavigation() {
             // SETORES
 
             "setores" -> SetoresScreen(
+
                 onVoltar = {
+
                     tela = "home"
                 },
 
                 onAbrirSetor = { id ->
+
                     setorSelecionado = id
+
                     tela = "detalhesSetor"
                 },
 
                 setores = setorInfo
             )
 
+            // DETALHES DO SETOR
+
             "detalhesSetor" -> DetalhesSetorScreen(
+
                 setorId = setorSelecionado,
 
                 onVoltar = {
+
                     tela = "setores"
                 },
 
                 setores = setorInfo,
+
                 cameras = cameraSetor,
+
                 funcionarios = funcionarioSetor,
+
                 ocorrencias = ocorrenciaSetor
             )
 
             // CÂMERAS
 
             "cameras" -> CamerasScreen(
+
                 onBackClick = {
+
                     tela = "home"
                 },
 
                 cameras = cameras,
+
                 statusCameras = statusCameras,
 
                 onCameraClick = { indice ->
+
                     cameraSelecionada = indice
+
                     tela = "camera"
                 }
             )
 
+            // VISUALIZAÇÃO DA CÂMERA
+
             "camera" -> {
 
-                val camera = cameras.getOrNull(cameraSelecionada)
+                val camera = cameras.getOrNull(
+                    cameraSelecionada
+                )
 
                 val status = camera?.let { item ->
+
                     statusCameras.firstOrNull {
                         it.id == item.id_status_camera
                     }
                 }
 
                 CameraScreen(
+
                     nomeCamera = camera?.nome
                         ?: "Câmera indisponível",
 
-                    videoUrl = camera?.endereco_stream,
+                    videoUrl =
+                        camera?.endereco_stream,
 
                     online = status?.status.equals(
                         "online",
                         true
                     ),
 
-                    statusConhecido = status != null,
+                    statusConhecido =
+                        status != null,
 
                     onBackClick = {
+
                         tela = "cameras"
                     },
 
-                    temAnterior = cameraSelecionada > 0,
-                    temProxima = cameraSelecionada + 1 < cameras.size,
+                    temAnterior =
+                        cameraSelecionada > 0,
+
+                    temProxima =
+                        cameraSelecionada + 1 < cameras.size,
 
                     onAnteriorClick = {
+
                         if (cameraSelecionada > 0) {
+
                             cameraSelecionada--
                         }
                     },
 
                     onProximaClick = {
-                        if (cameraSelecionada + 1 < cameras.size) {
+
+                        if (
+                            cameraSelecionada + 1 <
+                            cameras.size
+                        ) {
+
                             cameraSelecionada++
                         }
                     }
@@ -1108,88 +1395,135 @@ fun AppNavigation() {
             // FUNCIONÁRIOS
 
             "funcionarios" -> FuncionariosScreen(
+
                 onBackClick = {
+
                     tela = "home"
                 },
 
                 funcionarios = funcionarios,
+
                 cargos = cargos
             )
 
             // OCORRÊNCIAS
 
             "ocorrencias" -> OcorrenciasScreen(
+
                 onBackClick = {
+
                     tela = "home"
                 },
 
                 onRegistrarClick = {
+
                     erroCadastro = null
+
                     tela = "registrar"
                 },
 
                 onDetalhesClick = { ocorrencia ->
+
                     ocorrenciaSelecionada = ocorrencia
+
                     tela = "detalhesOcorrencia"
                 },
 
                 ocorrencias = detalhesOcorrencias
             )
 
-            "detalhesOcorrencia" -> DetalhesOcorrenciaScreen(
+            // DETALHES DA OCORRÊNCIA
+            // EXPORTAÇÃO DE PDF E CLOUDINARY
+
+            "detalhesOcorrencia" -> ExportarPdfScreen(
+
                 ocorrencia = detalhesOcorrencias.firstOrNull {
+
                     it.id == ocorrenciaSelecionada?.id
+
                 } ?: ocorrenciaSelecionada,
 
                 onBackClick = {
+
                     tela = "ocorrencias"
                 },
 
                 onAdicionarFuncionario = {
+
                     mensagemErro =
                         "A operação de vincular funcionário ainda não possui uma rota confirmada na API."
                 },
 
                 onAlterarStatus = {
-                    mensagemErro =
-                        "A operação de alterar o status ainda não possui uma rota confirmada na API."
-                },
-
-                onExportarPDF = {
-                    mensagemErro =
-                        "A exportação de PDF ainda não está configurada."
+                    val id = ocorrenciaSelecionada?.id
+                    if (id == null) {
+                        mensagemErro = "Nenhuma ocorrência selecionada."
+                    } else if (!carregando) {
+                        carregando = true
+                        mensagemErro = null
+                        scope.launch {
+                            try {
+                                repo.alterarStatusOcorrencia(id)
+                                recarregar++
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                mensagemErro = e.message ?: "Falha ao alterar o status da ocorrência."
+                            } finally {
+                                carregando = false
+                            }
+                        }
+                    }
                 }
             )
 
             // CADASTRO DE OCORRÊNCIA
 
             "registrar" -> RegistrarOcorrenciaScreen(
+
                 onBackClick = {
+
                     tela = "ocorrencias"
                 },
 
                 funcionarios = funcionarios,
+
                 setores = setores,
+
                 cameras = cameras,
+
                 motivos = motivos,
+
                 epis = epis,
 
                 carregando = carregando,
+
                 erroApi = null,
 
                 onRegistrar = { dados ->
+
                     scope.launch {
+
                         erroCadastro = null
+
                         carregando = true
 
                         try {
+
                             repo.cadastrarOcorrencia(
+
                                 dados.idSetor,
+
                                 dados.idMotivo,
+
                                 dados.descricao,
+
                                 dados.idFuncionario,
+
                                 dados.idCamera,
+
                                 dados.idEpi,
+
                                 dados.prioridade,
 
                                 usuarioAtual?.id
@@ -1199,14 +1533,20 @@ fun AppNavigation() {
                             )
 
                             recarregar++
+
                             tela = "ocorrencias"
 
                         } catch (e: CancellationException) {
+
                             throw e
+
                         } catch (e: Exception) {
+
                             erroCadastro = e.message
                                 ?: "Não foi possível cadastrar a ocorrência."
+
                         } finally {
+
                             carregando = false
                         }
                     }
@@ -1221,7 +1561,9 @@ fun AppNavigation() {
             tela != "login" &&
             tela != "registrar"
         ) {
+
             CircularProgressIndicator(
+
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 110.dp),
@@ -1233,9 +1575,13 @@ fun AppNavigation() {
         // POP-UP DE ERROS
 
         if (!erroAtual.isNullOrBlank()) {
+
             PopupErroOroscorp(
+
                 mensagem = erroAtual,
+
                 onFechar = {
+
                     fecharPopupErro()
                 }
             )
