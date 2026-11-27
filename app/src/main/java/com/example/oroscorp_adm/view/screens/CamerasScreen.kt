@@ -436,8 +436,8 @@ private fun CardCamera(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = if (online) "VISUALIZAR CÂMERA"
-                    else if (statusCamera.id < 0) "STATUS INDISPONÍVEL" else "SEM SINAL",
+                text = if (camera.endereco_stream.isNotBlank()) "VISUALIZAR CÂMERA"
+                else "SEM ENDEREÇO DE TRANSMISSÃO",
                 color = if (online) salmao else TemaGlobal.cor(Color.Gray, Color(0xFF60656B)),
                 fontSize = 13.sp
             )
@@ -453,8 +453,8 @@ private fun CardCamera(
                     if (statusCamera.id < 0) "● INDISPONÍVEL" else if (online) "● ONLINE" else "● OFFLINE"
                 )
 
-                if (online) {
-                    EtiquetaStatusCamera("● AO VIVO")
+                if (camera.endereco_stream.isNotBlank()) {
+                    EtiquetaStatusCamera("ABRIR VÍDEO")
                 }
             }
         }

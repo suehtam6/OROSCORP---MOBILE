@@ -31,6 +31,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -114,6 +117,11 @@ fun LoginScreen(
                 onValueChange = { password = it },
                 placeholder = { Text("SENHA", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    autoCorrectEnabled = false,
+                    capitalization = KeyboardCapitalization.None
+                ),
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()

@@ -3,6 +3,10 @@ package com.example.oroscorp_adm.view.screens
 
 import com.example.oroscorp_adm.ui.theme.TemaGlobal
 import android.content.Intent
+import android.content.ClipData
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.saveable.rememberSaveable
 import android.net.Uri
 
 import androidx.compose.foundation.border
@@ -20,12 +24,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-import com.example.oroscorp_adm.model.RelatorioPdf
-import com.example.oroscorp_adm.repository.RelatorioPdfRepository
 import com.example.oroscorp_adm.utils.PdfOcorrencia
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 import java.io.File
 
@@ -57,10 +61,6 @@ fun ExportarPdfScreen(
 
     val scope = rememberCoroutineScope()
 
-    val repository = remember {
-        RelatorioPdfRepository()
-    }
-
     var carregando by remember {
         mutableStateOf(false)
     }
@@ -73,133 +73,122 @@ fun ExportarPdfScreen(
         mutableStateOf<String?>(null)
     }
 
-    var relatorio by remember {
-        mutableStateOf<RelatorioPdf?>(null)
+    var caminhoPendente by rememberSaveable {
+        mutableStateOf<String?>(null)
     }
 
+    var relatorio by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+
+    val salvarPdf = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { destino ->
+        val caminho = caminhoPendente
+        caminhoPendente = null
+        val arquivo = caminho?.let { File(it) }
+
+        if (destino == null) {
+            arquivo?.delete()
+            carregando = false
+            etapa = ""
+        } else if (arquivo == null || !arquivo.isFile) {
+            erro = "O PDF temporário não foi encontrado. Gere o relatório novamente."
+            carregando = false
+            etapa = ""
+        } else {
+            carregando = true
+            etapa = "Salvando relatório PDF..."
+            scope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val saida = context.contentResolver.openOutputStream(destino, "w")
+                            ?: error("Não foi possível abrir o destino escolhido.")
+                        saida.use { output ->
+                            arquivo.inputStream().use { input -> input.copyTo(output) }
+                        }
+                    }
+                    // O provedor pode não oferecer permissão persistente.
+                    runCatching {
+                        context.contentResolver.takePersistableUriPermission(
+                            destino, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    }
+                    relatorio = destino.toString()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    erro = e.message ?: "Não foi possível salvar o PDF."
+                } finally {
+                    arquivo.delete()
+                    carregando = false
+                    etapa = ""
+                }
+            }
+        }
+    }
 
     fun exportar() {
-
-        if (carregando) {
-            return
-        }
-
+        if (carregando || caminhoPendente != null) return
         val ocorrenciaAtual = ocorrencia
-
         if (ocorrenciaAtual == null) {
-
             erro = "Nenhuma ocorrência foi selecionada."
-
             return
         }
 
         carregando = true
         erro = null
         relatorio = null
-
         scope.launch {
-
             var arquivo: File? = null
-
             try {
-
                 etapa = "Gerando relatório PDF..."
-
-                val pdf = PdfOcorrencia.gerar(
-                    context = context,
-                    ocorrencia = ocorrenciaAtual
-                )
-
+                val pdf = PdfOcorrencia.gerar(context.applicationContext, ocorrenciaAtual)
                 arquivo = pdf
-
-                etapa =
-                    "Armazenando relatório no Cloudinary..."
-
-                relatorio = repository.enviarPdf(
-                    idOcorrencia = ocorrenciaAtual.id,
-                    arquivo = pdf
-                )
-
+                caminhoPendente = pdf.absolutePath
+                carregando = false
+                etapa = ""
+                salvarPdf.launch(pdf.name)
+                arquivo = null // O callback do seletor fará a limpeza.
             } catch (e: CancellationException) {
-
                 throw e
-
             } catch (e: Exception) {
-
+                caminhoPendente = null
                 erro = when (e) {
-
                     is java.net.SocketTimeoutException ->
-                        "O servidor demorou demais para responder."
-
+                        "A evidência demorou demais para carregar."
                     is java.net.UnknownHostException ->
-                        "Não foi possível localizar o servidor."
-
+                        "Não foi possível localizar o servidor da evidência."
                     is java.net.ConnectException ->
-                        "Não foi possível conectar ao servidor."
-
-                    else ->
-                        e.message
-                            ?: "Falha ao exportar o relatório."
+                        "Não foi possível conectar ao servidor da evidência."
+                    else -> e.message ?: "Falha ao exportar o relatório."
                 }
-
             } finally {
-
                 arquivo?.delete()
-
                 carregando = false
                 etapa = ""
             }
         }
     }
 
-
-    fun abrirPdf(
-        dados: RelatorioPdf
-    ) {
-
-        scope.launch {
-
-            carregando = true
-            etapa = "Consultando relatório..."
-
-            try {
-
-                val atualizado =
-                    repository.buscarRelatorio(
-                        dados.idOcorrencia
-                    )
-
-                val url = Uri.parse(
-                    atualizado.secureUrl
-                )
-
-                require(url.scheme == "https") {
-                    "O servidor retornou uma URL inválida."
+    fun abrirPdf(dados: String, compartilhar: Boolean = false) {
+        try {
+            val uri = Uri.parse(dados)
+            val intent = if (compartilhar) {
+                Intent(Intent.ACTION_SEND).apply {
+                    type = "application/pdf"
+                    putExtra(Intent.EXTRA_STREAM, uri)
                 }
-
-                val intent = Intent(
-                    Intent.ACTION_VIEW,
-                    url
-                )
-
-                context.startActivity(intent)
-
-            } catch (e: CancellationException) {
-
-                throw e
-
-            } catch (e: Exception) {
-
-                relatorio = null
-
-                erro = e.message
-                    ?: "Não foi possível abrir o PDF."
-
-            } finally {
-
-                carregando = false
-                etapa = ""
+            } else {
+                Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "application/pdf")
+                }
             }
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.clipData = ClipData.newRawUri("Relatório PDF", uri)
+            context.startActivity(Intent.createChooser(intent, if (compartilhar) "Compartilhar PDF" else "Abrir PDF"))
+        } catch (e: Exception) {
+            erro = e.message ?: "Não foi possível abrir o PDF."
         }
     }
 
@@ -329,7 +318,7 @@ fun ExportarPdfScreen(
                 Column {
 
                     Text(
-                        text = "O relatório foi gerado e armazenado com sucesso no Cloudinary.",
+                        text = "O relatório foi gerado e salvo no local escolhido.",
                         color = BrancoPdf
                     )
 
@@ -338,14 +327,13 @@ fun ExportarPdfScreen(
                     )
 
                     Text(
-                        text = "Ocorrência #${resultado.idOcorrencia}",
+                        text = "Ocorrência #${ocorrencia?.id ?: "—"}",
                         color = CinzaPdf
                     )
 
-                    Text(
-                        text = "Relatório nº ${resultado.id}",
-                        color = CinzaPdf
-                    )
+                    TextButton(onClick = { abrirPdf(resultado, compartilhar = true) }) {
+                        Text("Compartilhar PDF", color = LaranjaPdf)
+                    }
                 }
             },
 
@@ -430,7 +418,7 @@ fun ExportarPdfScreen(
                 Column {
 
                     Text(
-                        text = "Não foi possível exportar o relatório.",
+                        text = "Não foi possível concluir a operação do PDF.",
                         color = BrancoPdf
                     )
 

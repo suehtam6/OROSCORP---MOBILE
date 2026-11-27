@@ -2,8 +2,6 @@
 package com.example.oroscorp_adm.view.screens
 
 import com.example.oroscorp_adm.ui.theme.TemaGlobal
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,14 +16,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.rtsp.RtspMediaSource
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import java.net.HttpURLConnection
+import java.net.URL
+import java.io.ByteArrayOutputStream
+import java.io.EOFException
 
 @Composable
 fun CameraScreen(
@@ -98,7 +111,7 @@ fun CameraScreen(
                     .background(Color(0xFF202020)),
                 contentAlignment = Alignment.Center
             ) {
-                if (online && !videoUrl.isNullOrBlank()) {
+                if (!videoUrl.isNullOrBlank()) {
                     VideoCamera(videoUrl)
                 } else {
                     Column(
@@ -139,8 +152,8 @@ fun CameraScreen(
         Spacer(Modifier.height(20.dp))
 
         Text(
-            text = if (online) "Câmera online"
-            else if (statusConhecido) "Câmera offline"
+            text = if (online) "Status cadastrado: online"
+            else if (statusConhecido) "Status cadastrado: offline"
             else "Status não disponível",
             color = if (online)
                 laranja else Color.Gray,
@@ -191,84 +204,178 @@ private fun ControleCamera(
 
 @Composable
 private fun VideoCamera(url: String) {
-    val recurso = url.substringBefore('?').lowercase()
-    val usarMedia3 = url.startsWith("rtsp://", ignoreCase = true) ||
-        recurso.endsWith(".m3u8") || recurso.endsWith(".mp4") ||
-        recurso.endsWith(".m4v") || recurso.endsWith(".mpd")
-    if (usarMedia3) PlayerCameraMedia3(url) else PlayerCameraWeb(url)
-}
-
-/** ExoPlayer permite RTSP, HLS, MP4 e DASH, quando os módulos estão no Gradle. */
-@Composable
-private fun PlayerCameraMedia3(url: String) {
-    val context = LocalContext.current
-    var erro by remember(url) { mutableStateOf<String?>(null) }
-    val player = remember(url) {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(url))
-            playWhenReady = true
-            prepare()
+    val endereco = url.trim()
+    val caminho = endereco.substringBefore('?').substringBefore('#').lowercase()
+    val rtsp = endereco.startsWith("rtsp://", true)
+    val http = endereco.startsWith("http://", true) || endereco.startsWith("https://", true)
+    val video = rtsp || (http && listOf(".m3u8", ".mp4", ".m4v", ".mpd", ".webm", ".ogg").any { caminho.endsWith(it) })
+    val owner = LocalLifecycleOwner.current
+    var ativo by remember(owner) {
+        mutableStateOf(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+    }
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, _ ->
+            ativo = owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+    var tentativa by remember(endereco) { mutableIntStateOf(0) }
+    var mensagem by remember(endereco, tentativa, ativo) { mutableStateOf("Conectando à câmera...") }
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (ativo) {
+            key(endereco, tentativa) {
+                when {
+                    video -> PlayerCameraMedia3(endereco) { mensagem = it }
+                    http -> PlayerCameraMjpeg(endereco) { mensagem = it }
+                    else -> LaunchedEffect(endereco) { mensagem = "Protocolo não suportado" }
+                }
+            }
+        }
+        if (ativo && mensagem.isEmpty()) {
+            Text("VÍDEO RECEBIDO", color = Color.White, fontSize = 10.sp,
+                modifier = Modifier.align(Alignment.TopStart).background(Color.Black.copy(alpha = 0.7f)).padding(5.dp))
+        }
+        if (mensagem.isNotEmpty()) {
+            Column(Modifier.align(Alignment.Center).background(Color.Black.copy(alpha = 0.8f)).padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(if (ativo) mensagem else "Transmissão pausada", color = Color.White, fontSize = 12.sp, textAlign = TextAlign.Center)
+                if (ativo) TextButton(onClick = { tentativa++ }) { Text("Reconectar", color = Color(0xFFFF8800)) }
+            }
         }
     }
-    DisposableEffect(player) {
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@Composable
+private fun PlayerCameraMedia3(url: String, onStatus: (String) -> Unit) {
+    val context = LocalContext.current
+    val status by rememberUpdatedState(onStatus)
+    val player = remember(url, context) { ExoPlayer.Builder(context).build() }
+    DisposableEffect(player, url) {
+        var quadroRecebido = false
         val listener = object : Player.Listener {
+            override fun onRenderedFirstFrame() {
+                quadroRecebido = true
+                status("")
+            }
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                when (playbackState) {
+                    Player.STATE_BUFFERING -> status("Carregando transmissão...")
+                    Player.STATE_READY -> if (quadroRecebido) status("")
+                    Player.STATE_ENDED -> status("Transmissão encerrada")
+                    else -> Unit
+                }
+            }
             override fun onPlayerError(error: PlaybackException) {
-                erro = "Falha ao reproduzir: ${error.errorCodeName}"
+                status("Sem sinal: ${error.errorCodeName}")
             }
         }
         player.addListener(listener)
+        try {
+            val item = MediaItem.fromUri(url)
+            if (url.startsWith("rtsp://", true)) {
+                player.setMediaSource(RtspMediaSource.Factory()
+                    .setForceUseRtpTcp(true)
+                    .setTimeoutMs(12000)
+                    .createMediaSource(item))
+            } else {
+                player.setMediaItem(item)
+            }
+            player.volume = 0f
+            player.playWhenReady = true
+            player.prepare()
+        } catch (_: Exception) {
+            status("Não foi possível iniciar a transmissão")
+        }
         onDispose {
             player.removeListener(listener)
             player.release()
         }
     }
-    if (erro == null) {
-        AndroidView(
-            factory = { ctx -> PlayerView(ctx).apply { useController = false; this.player = player } },
-            update = { it.player = player },
-            modifier = Modifier.fillMaxSize()
-        )
-    } else {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(erro.orEmpty(), color = Color.LightGray, fontSize = 12.sp, textAlign = TextAlign.Center)
-        }
-    }
+    AndroidView(
+        factory = { ctx -> PlayerView(ctx).apply { useController = false; this.player = player } },
+        update = { it.player = player },
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
-/** WebView apenas para streams HTTP compatíveis (ex.: MJPEG/HTML); não suporta RTSP. */
+/** Lê quadros JPEG diretamente do stream HTTP multipart, sem abrir páginas web. */
 @Composable
-private fun PlayerCameraWeb(url: String) {
-    var erro by remember(url) { mutableStateOf(false) }
-    if (!url.startsWith("http://", true) && !url.startsWith("https://", true)) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Protocolo de vídeo não suportado", color = Color.LightGray, fontSize = 12.sp)
-        }
-        return
-    }
-    if (erro) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Não foi possível carregar a transmissão", color = Color.LightGray,
-                fontSize = 12.sp, textAlign = TextAlign.Center)
-        }
-    } else {
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    webViewClient = object : WebViewClient() {
-                        override fun onReceivedError(
-                            view: WebView?, request: android.webkit.WebResourceRequest?,
-                            error: android.webkit.WebResourceError?
-                        ) {
-                            if (request?.isForMainFrame == true) erro = true
+private fun PlayerCameraMjpeg(url: String, onStatus: (String) -> Unit) {
+    var quadro by remember(url) { mutableStateOf<Bitmap?>(null) }
+    val status by rememberUpdatedState(onStatus)
+    LaunchedEffect(url) {
+        try {
+            withContext(Dispatchers.IO) {
+                val conexao = URL(url).openConnection() as HttpURLConnection
+                try {
+                    conexao.connectTimeout = 10000
+                    conexao.readTimeout = 10000
+                    conexao.instanceFollowRedirects = false
+                    conexao.useCaches = false
+                    conexao.setRequestProperty("Accept", "multipart/x-mixed-replace")
+                    val codigo = conexao.responseCode
+                    if (codigo !in 200..299) error("Servidor de vídeo retornou HTTP $codigo")
+                    val tipo = conexao.contentType.orEmpty().lowercase()
+                    if (!tipo.startsWith("multipart/x-mixed-replace")) {
+                        error("O endereço HTTP não fornece MJPEG/JPEG")
+                    }
+                    conexao.inputStream.buffered(32768).use { input ->
+                        val buffer = ByteArrayOutputStream()
+                        var anterior = -1
+                        var capturando = false
+                        var ultimoQuadro = android.os.SystemClock.elapsedRealtime()
+                        var bytesLidos = 0
+                        while (true) {
+                            currentCoroutineContext().ensureActive()
+                            val atual = input.read()
+                            if (atual < 0) throw EOFException()
+                            bytesLidos++
+                            if (bytesLidos % 4096 == 0 && android.os.SystemClock.elapsedRealtime() - ultimoQuadro > 15000) {
+                                error("Nenhum quadro recebido")
+                            }
+                            if (!capturando && anterior == 0xff && atual == 0xd8) {
+                                buffer.reset()
+                                buffer.write(0xff)
+                                buffer.write(0xd8)
+                                capturando = true
+                            } else if (capturando) {
+                                buffer.write(atual)
+                                if (buffer.size() > 5 * 1024 * 1024) error("Quadro de vídeo excede o limite")
+                                if (anterior == 0xff && atual == 0xd9) {
+                                    val dados = buffer.toByteArray()
+                                    val opcoes = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                                    BitmapFactory.decodeByteArray(dados, 0, dados.size, opcoes)
+                                    if (opcoes.outWidth <= 0 || opcoes.outHeight <= 0) error("Quadro JPEG inválido")
+                                    var amostra = 1
+                                    while (opcoes.outWidth / amostra > 1920 || opcoes.outHeight / amostra > 1080) amostra *= 2
+                                    opcoes.inJustDecodeBounds = false
+                                    opcoes.inSampleSize = amostra
+                                    val bitmap = BitmapFactory.decodeByteArray(dados, 0, dados.size, opcoes)
+                                    if (bitmap != null) {
+                                        ultimoQuadro = android.os.SystemClock.elapsedRealtime()
+                                        withContext(Dispatchers.Main) {
+                                            quadro = bitmap
+                                            status("")
+                                        }
+                                    }
+                                    capturando = false
+                                }
+                            }
+                            anterior = atual
                         }
                     }
-                    settings.javaScriptEnabled = false
-                    loadUrl(url)
-                }
-            },
-            update = { webView -> if (webView.url != url) webView.loadUrl(url) },
-            onRelease = { webView -> webView.stopLoading(); webView.destroy() },
-            modifier = Modifier.fillMaxSize()
-        )
+                } finally { conexao.disconnect() }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: EOFException) {
+            status("Transmissão encerrada")
+        } catch (_: Exception) {
+            status("Sem sinal HTTP/MJPEG. Verifique a rede e o endereço cadastrado.")
+        }
+    }
+    quadro?.let {
+        Image(bitmap = it.asImageBitmap(), contentDescription = "Imagem da câmera", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
     }
 }

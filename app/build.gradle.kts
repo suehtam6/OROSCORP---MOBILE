@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation("androidx.media3:media3-exoplayer-rtsp:1.11.1")
+    implementation("androidx.media3:media3-exoplayer-hls:1.11.1")
+    implementation("androidx.media3:media3-exoplayer-dash:1.11.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // Testes

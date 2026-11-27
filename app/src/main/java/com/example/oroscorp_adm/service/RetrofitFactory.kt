@@ -38,7 +38,15 @@ class RetrofitFactory {
                     request.url.encodedPath
                         .endsWith("/trocar-senha/solicitar")
 
-                if (recuperacaoSenha) {
+                val cadastroOcorrencia = request.method == "POST" &&
+                    request.url.encodedPath.trimEnd('/').endsWith("/ocorrencia")
+
+                if (cadastroOcorrencia) {
+                    chain.withConnectTimeout(15, TimeUnit.SECONDS)
+                        .withReadTimeout(90, TimeUnit.SECONDS)
+                        .withWriteTimeout(60, TimeUnit.SECONDS)
+                        .proceed(request)
+                } else if (recuperacaoSenha) {
 
                     chain
                         .withConnectTimeout(

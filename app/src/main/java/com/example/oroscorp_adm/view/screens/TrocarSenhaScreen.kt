@@ -14,6 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -83,6 +86,12 @@ fun TrocarSenhaScreen(
                 onValueChange = { novaSenha = it },
                 placeholder = { Text("Senha", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    autoCorrectEnabled = false,
+                    capitalization = KeyboardCapitalization.None
+                ),
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -105,6 +114,12 @@ fun TrocarSenhaScreen(
                 onValueChange = { confirmarSenha = it },
                 placeholder = { Text("Confirmar Senha", color = TemaGlobal.cor(Color.Gray, Color(0xFF60656B))) },
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    autoCorrectEnabled = false,
+                    capitalization = KeyboardCapitalization.None
+                ),
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

@@ -5,8 +5,8 @@ package com.example.oroscorp_adm.service
  *  HTTP em rede local é apenas para desenvolvimento. Em produção, use HTTPS.
  */
 object ApiConfig {
-    //const val BASE_URL = "http://10.0.2.2:8080/v1/oroscorp/"
-    const val BASE_URL = "http://localhost:8080/v1/oroscorp/"
+    const val BASE_URL = "http://10.0.2.2:8080/v1/oroscorp/"
+    //const val BASE_URL = "http://localhost:8080/v1/oroscorp/"
 }
 
 /**

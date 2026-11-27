@@ -72,7 +72,10 @@ fun RegistrarOcorrenciaScreen(
     var horario by remember { mutableStateOf(SimpleDateFormat("HH:mm", Locale("pt", "BR")).format(Date())) }
 
     val imagens = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        evidencia = uri?.toString()
+        if (uri != null) {
+            evidencia = uri.toString()
+            erroValidacao = null
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().background(fundo)) {
@@ -93,7 +96,7 @@ fun RegistrarOcorrenciaScreen(
             Text("Registrar\nocorrência manual", color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)), fontSize = 28.sp,
                 fontWeight = FontWeight.Bold, lineHeight = 34.sp)
             Spacer(Modifier.height(8.dp))
-            Text("Cadastro sem evidência: data e horário não são gravados pelo banco sem uma foto.",
+            Text("Anexe uma fotografia JPEG, PNG ou WebP de até 5 MB. A câmera é opcional para evidências manuais.",
                 color = TemaGlobal.cor(Color.LightGray, Color(0xFF60656B)), fontSize = 13.sp)
             Spacer(Modifier.height(18.dp))
             Column(Modifier.fillMaxWidth().background(cartao, RoundedCornerShape(16.dp)).then(if (TemaGlobal.modoClaro) Modifier.border(1.dp, TemaGlobal.borda, RoundedCornerShape(16.dp)) else Modifier).padding(12.dp)) {
@@ -163,6 +166,14 @@ fun RegistrarOcorrenciaScreen(
                         color = TemaGlobal.cor(Color.White, Color(0xFF191C1F)))
                 }
             }
+            if (evidencia != null) {
+                TextButton(onClick = {
+                    evidencia = null
+                    erroValidacao = null
+                }) {
+                    Text("Remover evidência selecionada", color = laranja)
+                }
+            }
             if (!erroValidacao.isNullOrBlank() || !erroApi.isNullOrBlank()) {
                 Spacer(Modifier.height(12.dp))
                 Text(erroValidacao ?: erroApi.orEmpty(), color = TemaGlobal.cor(Color(0xFFFFA085), Color(0xFFB3261E)), fontSize = 12.sp)
@@ -176,6 +187,7 @@ fun RegistrarOcorrenciaScreen(
                         idFuncionario == null -> "Selecione um funcionário"
                         idMotivo == null -> "Selecione o motivo da ocorrência"
                         descricao.isBlank() -> "Informe a descrição"
+                        idCamera != null && evidencia == null -> "Selecione uma imagem ou deixe a câmera sem seleção."
                         else -> null
                     }
                     if (erroValidacao == null && idSetor != null && idMotivo != null) {

@@ -58,10 +58,12 @@ fun HomeScreen(
     carregando: Boolean = false,
     erro: String? = null,
     onAtualizarClick: () -> Unit = {},
-    dadosGrafico: List<Int> = emptyList()
+    dadosGrafico: Map<String, List<PontoDashboard>> = emptyMap(),
+    ocorrenciasSemData: Int? = null
 ) {
     var menuAberto by remember { mutableStateOf(false) }
     var periodo by remember { mutableStateOf("Semana") }
+    val pontosGrafico = dadosGrafico[periodo].orEmpty()
 
     Box(
         modifier = Modifier
@@ -265,7 +267,7 @@ fun HomeScreen(
                         Spacer(Modifier.height(5.dp))
 
                         Text(
-                            "Detecções de IA e registros manuais",
+                            "Cadastro neste aparelho ou primeira evidência datada",
                             color = Cinza,
                             fontSize = 11.sp
                         )
@@ -326,24 +328,55 @@ fun HomeScreen(
                         Spacer(Modifier.height(22.dp))
 
                         GraficoOcorrencias(
-                            valores = dadosGrafico,
+                            valores = pontosGrafico.map { it.quantidade },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(170.dp)
                         )
 
+                        if (pontosGrafico.isNotEmpty()) {
+                            val indices = listOf(
+                                0, pontosGrafico.lastIndex / 2, pontosGrafico.lastIndex
+                            ).distinct()
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                indices.forEach { indice ->
+                                    Text(
+                                        pontosGrafico[indice].rotulo,
+                                        color = Cinza,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                        }
+
                         Spacer(Modifier.height(10.dp))
 
                         Text(
-                            if (dadosGrafico.isEmpty())
-                                "Sem dados disponíveis para o gráfico."
-                            else
-                                "Dados de ocorrências recebidos do sistema.",
+                            if (pontosGrafico.isEmpty())
+                                "Sem datas disponíveis para o gráfico."
+                            else when (periodo) {
+                                "Hoje" -> "Hoje, por hora — horário de São Paulo."
+                                "Semana" -> "Últimos 7 dias — por data disponível."
+                                else -> "Últimos 30 dias — por data disponível."
+                            },
                             color = Cinza,
                             fontSize = 10.sp,
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
+
+                        if (ocorrenciasSemData != null && ocorrenciasSemData > 0) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "$ocorrenciasSemData ocorrência(s) sem data disponível. " +
+                                    "Não incluídas nos totais por período.",
+                                color = Cinza,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
 
@@ -730,6 +763,9 @@ private fun GraficoOcorrencias(
         val largura = size.width
         val altura = size.height
 
+        val margem = 4.dp.toPx()
+        val alturaUtil = (altura - 2 * margem).coerceAtLeast(1f)
+        val larguraUtil = (largura - 2 * margem).coerceAtLeast(1f)
         val maximo = (
                 valoresValidos.maxOrNull() ?: 0
                 )
@@ -757,11 +793,11 @@ private fun GraficoOcorrencias(
             val caminho = Path()
 
             valoresValidos.forEachIndexed { index, valor ->
-                val x = largura * index /
+                val x = margem + larguraUtil * index /
                         (valoresValidos.size - 1).toFloat()
 
-                val y = altura -
-                        (valor / maximo) * altura
+                val y = margem + alturaUtil -
+                        (valor / maximo) * alturaUtil
 
                 if (index == 0) {
                     caminho.moveTo(x, y)
@@ -776,6 +812,17 @@ private fun GraficoOcorrencias(
                 style = Stroke(
                     width = 3.dp.toPx()
                 )
+            )
+        }
+
+        valoresValidos.forEachIndexed { indice, valor ->
+            val x = if (valoresValidos.size == 1) largura / 2f else
+                margem + larguraUtil * indice / (valoresValidos.size - 1).toFloat()
+            val y = margem + alturaUtil - (valor / maximo) * alturaUtil
+            drawCircle(
+                color = Laranja,
+                radius = 3.dp.toPx(),
+                center = androidx.compose.ui.geometry.Offset(x, y)
             )
         }
     }

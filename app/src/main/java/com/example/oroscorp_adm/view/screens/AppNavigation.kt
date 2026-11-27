@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import com.example.oroscorp_adm.service.ApiConfig
+import java.time.Instant
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +25,6 @@ import com.example.oroscorp_adm.service.SessionAuth
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-import java.time.LocalDate
 
 private val CorFundoPopup
     get() = TemaGlobal.cor(Color(0xFF101315), Color(0xFFFFFFFF))
@@ -111,6 +113,25 @@ fun AppNavigation() {
 
     val repo = remember { OroscorpRepository() }
     val scope = rememberCoroutineScope()
+    val contexto = LocalContext.current.applicationContext
+    val datasLocais = remember(contexto) {
+        contexto.getSharedPreferences(
+            "oroscorp_datas_" + ApiConfig.BASE_URL.hashCode(),
+            android.content.Context.MODE_PRIVATE
+        )
+    }
+    var datasCadastro by remember(datasLocais) {
+        val mapa: Map<Int, Instant> = buildMap<Int, Instant> {
+            datasLocais.all.forEach { (chave, valor) ->
+                val id = chave.toIntOrNull() ?: return@forEach
+                val texto = valor as? String ?: return@forEach
+                val instante = runCatching { Instant.parse(texto) }
+                    .getOrNull() ?: return@forEach
+                put(id, instante)
+            }
+        }
+        mutableStateOf<Map<Int, Instant>>(mapa)
+    }
 
     var tela by remember { mutableStateOf("login") }
     var recarregar by remember { mutableIntStateOf(0) }
@@ -881,43 +902,15 @@ fun AppNavigation() {
             null
         }
 
-    val ocorrenciasHoje: Int? =
-        if (ocorrenciasOk && evidenciasOk) {
+    val resumoDashboard = DashboardOcorrencias.calcular(
+        ocorrencias = ocorrencias,
+        evidencias = evidencias,
+        dadosDisponiveis = ocorrenciasOk && evidenciasOk,
+        datasCadastro = datasCadastro
+    )
 
-            val hoje = LocalDate.now().toString()
-
-            val todasComData = ocorrencias.all { ocorrencia ->
-
-                evidencias.any {
-                    it.id_ocorrencia == ocorrencia.id &&
-                            !it.dataHora.isNullOrBlank()
-                }
-            }
-
-            if (todasComData) {
-
-                ocorrencias.count { ocorrencia ->
-
-                    evidencias.any { evidencia ->
-
-                        evidencia.id_ocorrencia ==
-                                ocorrencia.id &&
-                                evidencia.dataHora?.take(10) ==
-                                hoje
-                    }
-                }
-
-            } else {
-
-                null
-            }
-
-        } else {
-
-            null
-        }
-
-    val dadosGrafico: List<Int> = emptyList()
+    val ocorrenciasHoje = resumoDashboard.hoje
+    val dadosGrafico = resumoDashboard.grafico
 
     // POP-UP CENTRALIZADO
     // Prioriza o erro da tela atual.
@@ -1250,6 +1243,7 @@ fun AppNavigation() {
                 erro = null,
 
                 dadosGrafico = dadosGrafico,
+                ocorrenciasSemData = resumoDashboard.semData,
 
                 onAtualizarClick = {
 
@@ -1510,7 +1504,13 @@ fun AppNavigation() {
 
                         try {
 
-                            repo.cadastrarOcorrencia(
+                            val imagemBase64 = dados.evidenciaUri?.let {
+                                EvidenciaLocal.lerBase64(contexto, it)
+                            }
+                            val dataHoraEvidencia = if (imagemBase64 != null) {
+                                EvidenciaLocal.dataHoraSql(dados.data, dados.horario)
+                            } else null
+                            val idCriado: Int = repo.cadastrarOcorrencia(
 
                                 dados.idSetor,
 
@@ -1529,8 +1529,17 @@ fun AppNavigation() {
                                 usuarioAtual?.id
                                     ?: error("Sessão inválida."),
 
-                                dados.evidenciaUri
+                                imagemBase64,
+                                dataHoraEvidencia
                             )
+
+                            val instanteCadastro = Instant.now()
+                            datasCadastro = datasCadastro.toMutableMap().apply {
+                                put(idCriado, instanteCadastro)
+                            }
+                            datasLocais.edit().putString(
+                                idCriado.toString(), instanteCadastro.toString()
+                            ).apply()
 
                             recarregar++
 

@@ -96,7 +96,7 @@ class OroscorpRepository(
             val obj = json.asJsonObject
 
             for (
-            key in listOf(
+                key in listOf(
                 "dados",
                 "data",
                 "items",
@@ -264,6 +264,15 @@ class OroscorpRepository(
         val obj = objeto(value)
             ?.deepCopy()
             ?: return value
+
+        obj.get("data_hora_sql")?.takeUnless { it.isJsonNull }?.let {
+            obj.add("data_hora", it)
+        }
+        for (chave in listOf("funcionario", "camera")) {
+            if (obj.has(chave) && obj.get(chave).isJsonNull && !obj.has("id_$chave")) {
+                obj.add("id_$chave", com.google.gson.JsonNull.INSTANCE)
+            }
+        }
 
         for (
         key in listOf(
@@ -602,14 +611,15 @@ class OroscorpRepository(
 
         idUsuario: Int,
 
-        evidencia: String?
-    ) {
+        evidencia: String?,
+        dataHoraEvidencia: String? = null
+    ): Int {
 
-        require(
-            idCamera == null &&
-                    evidencia == null
-        ) {
-            "Envio de evidência requer upload de imagem no servidor; retire a câmera e a imagem para cadastrar sem evidência."
+        require(idCamera == null || evidencia != null) {
+            "Selecione uma imagem para associar uma câmera."
+        }
+        require(evidencia == null || !dataHoraEvidencia.isNullOrBlank()) {
+            "Informe a data e o horário da evidência."
         }
 
         require(
@@ -747,21 +757,26 @@ class OroscorpRepository(
                 }
             )
 
-            add(
-                "cameras",
-                JsonArray()
-            )
+            add("cameras", JsonArray().apply {
+                if (evidencia != null) {
+                    add(JsonObject().apply {
+                        addProperty("id_camera", idCamera)
+                        addProperty("data_hora", dataHoraEvidencia)
+                        add("confianca_ia", com.google.gson.JsonNull.INSTANCE)
+                    })
+                }
+            })
+            if (evidencia != null) addProperty("imagem_base64", evidencia)
         }
 
-        checked(
-
-            api.post(
-
-                ApiPaths.OCORRENCIA,
-
-                payload
-            )
-        )
+        val resposta = api.post(ApiPaths.OCORRENCIA, payload)
+        val resultado = checked(resposta)
+        check(resposta.code() == 201) {
+            "Cadastro retornou HTTP ${resposta.code()}. Confira a lista antes de repetir."
+        }
+        return objeto(resultado)?.get("id")?.takeUnless { it.isJsonNull }
+            ?.asInt?.takeIf { it > 0 }
+            ?: error("Cadastro enviado, mas a API não retornou o ID. Confira a lista antes de repetir.")
     }
 
     // FECHAR OU REABRIR OCORRÊNCIA
@@ -941,17 +956,7 @@ class OroscorpRepository(
 
         ).asString
 
-        require(
 
-            !descricao.contains('\'') &&
-
-                    !descricao.contains('\\') &&
-
-                    !descricao.contains('"')
-
-        ) {
-            "O backend atual não preserva esta descrição com segurança. Atualização cancelada."
-        }
 
         // BUSCAR DADOS ANTES DA ATUALIZAÇÃO
 
